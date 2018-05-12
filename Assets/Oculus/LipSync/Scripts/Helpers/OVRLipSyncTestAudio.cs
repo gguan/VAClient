@@ -19,7 +19,7 @@ public class OVRLipSyncTestAudio : MonoBehaviour
 		path += "/../";
 		path += "TestViseme.wav";
 
-		WWW www = new WWW( "file:///" + path );
+		WWW www = new WWW( "file:///Users/gguan/Unity/UnityChanAgent/Assets/univ0019.wav" );
 		while ( !www.isDone )
 		{
 			Debug.Log(www.progress);
