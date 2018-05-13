@@ -78,23 +78,23 @@ public class DebugConsole : MonoBehaviour
     {
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
-            // Iterate through the recorded logs.
-            for (int i = 0; i < logs.Count; i++) {
-                var log = logs[i];
+        // Iterate through the recorded logs.
+        for (int i = 0; i < logs.Count; i++) {
+            var log = logs[i];
 
-                // Combine identical messages if collapse option is chosen.
-                if (collapse) {
-                    var messageSameAsPrevious = i > 0 && log.message == logs[i - 1].message;
+            // Combine identical messages if collapse option is chosen.
+            if (collapse) {
+                var messageSameAsPrevious = i > 0 && log.message == logs[i - 1].message;
 
-                    if (messageSameAsPrevious) {
-                        continue;
-                    }
+                if (messageSameAsPrevious) {
+                    continue;
                 }
-
-                GUI.contentColor = logTypeColors[log.type];
-			    guiStyle.fontSize = this.fontSize;
-                GUILayout.Label(log.message);
             }
+
+            GUI.contentColor = logTypeColors[log.type];
+		    guiStyle.fontSize = this.fontSize;
+            GUILayout.Label(log.message);         
+        }
 
         GUILayout.EndScrollView();
 
@@ -102,11 +102,11 @@ public class DebugConsole : MonoBehaviour
 
         GUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(clearLabel)) {
-                logs.Clear();
-            }
+        if (GUILayout.Button(clearLabel)) {
+            logs.Clear();
+        }
 
-            collapse = GUILayout.Toggle(collapse, collapseLabel, GUILayout.ExpandWidth(false));
+        collapse = GUILayout.Toggle(collapse, collapseLabel, GUILayout.ExpandWidth(false));
 
         GUILayout.EndHorizontal();
 
@@ -127,5 +127,6 @@ public class DebugConsole : MonoBehaviour
             stackTrace = stackTrace,
             type = type,
         });
+		scrollPosition.y = Mathf.Infinity;
     }
 }

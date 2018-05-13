@@ -6,15 +6,16 @@ using System.Net;
 using System.Net.Sockets;
 using Wit.BaiduAip.Speech;
 
-	public class KalliopeClient : MonoBehaviour
+public class KalliopeClient : MonoBehaviour
 {
 
-    private Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    private Socket _clientSocket;
     private byte[] _receiveBuffer = new byte[1024];
+	private bool _connected = false;
 
-    // TODO: Make it outside 
-    bool _hasTask = false;
-    string _taskData = "";
+    // TODO
+	bool _onCmd = false;
+	string _cmd = "";
 
     // Baidu AIP
     const string APIKey = "NgT1OZT4jTdTZizBgPvWkVnB";
@@ -29,19 +30,24 @@ using Wit.BaiduAip.Speech;
     {
         _startPlaying = false;
 
+        // 初始化百度TTS
         _asr = new Tts(APIKey, SecretKey);
         StartCoroutine(_asr.GetAccessToken());
+        // 连接Kalliope
         SetupServer();
+        // Check connection every 10 seconds
+		StartCoroutine("CheckSocket");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (_hasTask)
+        if (_onCmd)
         {
-            ProcessData(_taskData);
-            _hasTask = false;
+			ProcessCmd(_cmd);
+            _onCmd = false;
         }
+
         if (_startPlaying)
         {
             if (!_audioSource.isPlaying)
@@ -50,25 +56,25 @@ using Wit.BaiduAip.Speech;
                 SendData(System.Text.Encoding.UTF8.GetBytes("Duration: " + _audioSource.clip.length + "s"));
                 Debug.Log("播放完毕");
             }
-        }
+        }      
+
     }
 
-    void ProcessData(string data)
+    void ProcessCmd(string data)
     {
         Debug.Log(data);
         StartCoroutine(_asr.Synthesis(data.Trim(), s =>
         {
             if (s.Success)
             {
-                Debug.Log("合成成功，正在播放");
                 _audioSource.clip = s.clip;
-                _audioSource.Play();
-
+                _audioSource.Play();            
                 _startPlaying = true;
+				Debug.Log("合成成功，正在播放，共" + _audioSource.clip.length + "s");            
             }
             else
             {
-                Debug.Log(s.err_msg);
+				Debug.LogError(s.err_msg);
             }
         }));
     }
@@ -78,26 +84,44 @@ using Wit.BaiduAip.Speech;
         _clientSocket.Close();
     }
 
-    private void SetupServer()
+	IEnumerator CheckSocket()
+    {
+        for (; ; )
+        {
+			if (_connected)
+			{
+				// execute block of code here
+                if ((_clientSocket.Poll(1000, SelectMode.SelectRead) && _clientSocket.Available == 0) || !_clientSocket.Connected)
+                {
+                    _connected = false;
+                    Debug.LogError("Socket connection lost!");
+                } 
+			}
+            yield return new WaitForSeconds(10.0f);
+        }
+    }
+
+    void SetupServer()
     {
         try
         {
+			_clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _clientSocket.Connect(new IPEndPoint(IPAddress.Loopback, 9000));
-            Debug.Log("Socket connected!");
+			_connected = true;
+            Debug.Log("Kalliope socket connected!");         
+			_clientSocket.BeginReceive(_receiveBuffer, 0, _receiveBuffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
         }
         catch (SocketException ex)
         {
-            Debug.Log(ex.Message);
+			Debug.LogError("连接socket失败: " + ex.Message);
         }
-
-        _clientSocket.BeginReceive(_receiveBuffer, 0, _receiveBuffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
+        
     }
 
     private void ReceiveCallback(IAsyncResult AR)
     {
         //Check how much bytes are recieved and call EndRecieve to finalize handshake
         int recieved = _clientSocket.EndReceive(AR);
-        Debug.Log(recieved);
 
         if (recieved <= 0)
             return;
@@ -110,10 +134,10 @@ using Wit.BaiduAip.Speech;
         //Debug.Log(System.Text.Encoding.UTF8.GetString(_receiveBuffer));
         //SendData(System.Text.Encoding.UTF8.GetBytes("ping"));
 
-        // Store data in dataContainer and process it in Update() function
-        _taskData = System.Text.Encoding.UTF8.GetString(recData).Trim();
-        _hasTask = true;       
-        Debug.Log("收到: " + _taskData + " 长度: " + _taskData.Length);
+        // Save command and process it in Update() function
+        _cmd = System.Text.Encoding.UTF8.GetString(recData).Trim();
+        _onCmd = true;       
+		Debug.Log("收到: " + _cmd + " 长度: " + recieved);
 
         //Start receiving again
         _clientSocket.BeginReceive(_receiveBuffer, 0, _receiveBuffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), null);
@@ -124,6 +148,18 @@ using Wit.BaiduAip.Speech;
         SocketAsyncEventArgs socketAsyncData = new SocketAsyncEventArgs();
         socketAsyncData.SetBuffer(data, 0, data.Length);
         _clientSocket.SendAsync(socketAsyncData);
+    }
+
+	void OnGUI()
+    {
+		if (_connected) {
+			return;
+		}    
+
+		if (GUI.Button(new Rect(Screen.width / 2, Screen.height - 60, 200, 40), "Connect Again"))
+        {
+            SetupServer();
+        }
     }
 
 }
