@@ -333,8 +333,9 @@ GameObject:
   m_Component:
   - component: {fileID: 242095331}
   - component: {fileID: 242095330}
+  - component: {fileID: 242095332}
   m_Layer: 0
-  m_Name: Lip Sync
+  m_Name: Global Object
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -364,6 +365,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &242095332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 242095329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13f0c2db1b822422b8efedec079eee92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toggleKey: 120
+  fontSize: 20
 --- !u!1 &282840810
 GameObject:
   m_ObjectHideFlags: 0
