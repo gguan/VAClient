@@ -89,7 +89,6 @@ namespace Wit.BaiduAip.Speech
 #else
             var www = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.MPEG);
 #endif
-            Debug.Log(www.url);
             yield return www.SendWebRequest();
 
 

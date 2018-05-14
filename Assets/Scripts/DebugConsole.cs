@@ -39,7 +39,7 @@ public class DebugConsole : MonoBehaviour
 
     const int margin = 20;
 
-    Rect windowRect = new Rect(margin, margin, Screen.width - (margin * 2), Screen.height - (margin * 2));
+    Rect windowRect = new Rect(margin, margin, Screen.width / 2 - (margin * 2), Screen.height / 2 - (margin * 2));
     Rect titleBarRect = new Rect(0, 0, 10000, 20);
     GUIContent clearLabel = new GUIContent("Clear", "Clear the contents of the console.");
     GUIContent collapseLabel = new GUIContent("Collapse", "Hide repeated messages.");

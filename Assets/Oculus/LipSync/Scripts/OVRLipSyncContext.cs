@@ -62,7 +62,7 @@ public class OVRLipSyncContext : OVRLipSyncContextBase
     void Start()
     {
        // Add a listener to the OVRMessenger for touch events
-        OVRMessenger.AddListener<OVRTouchpad.TouchEvent>("Touchpad", LocalTouchEventCallback);
+        //OVRMessenger.AddListener<OVRTouchpad.TouchEvent>("Touchpad", LocalTouchEventCallback);
     }
 
     /// <summary>
