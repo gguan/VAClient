@@ -9,6 +9,15 @@ using Wit.BaiduAip.Speech;
 public class KalliopeClient : MonoBehaviour
 {
 
+	[Serializable]
+    public class ActionData
+    {
+        public string message;
+        public string action;
+        public string expression;
+    }
+
+
 	private Socket _clientSocket;
 	private byte[] _receiveBuffer = new byte[1024];
 	private bool _connected = false;
@@ -24,6 +33,10 @@ public class KalliopeClient : MonoBehaviour
 	private Tts _asr;
 
 	public AudioSource _audioSource;
+	public Animator _animator;
+	public AnimationClip[] _animClips;
+
+
 	bool _startPlaying;
 
 	GUIStyle guiStyle = new GUIStyle();
@@ -60,6 +73,8 @@ public class KalliopeClient : MonoBehaviour
 			if (!_audioSource.isPlaying)
 			{
 				_startPlaying = false;
+				_animator.CrossFade("Standing@loop", 0.25f);
+				_animator.CrossFade("default@sd_hmd", 0.1f);
 				SendData(System.Text.Encoding.UTF8.GetBytes("Duration: " + _audioSource.clip.length + "s"));
 				Debug.Log("播放完毕");
 			}
@@ -69,21 +84,47 @@ public class KalliopeClient : MonoBehaviour
 
 	void ProcessCmd(string data)
 	{
-		Debug.Log(data);
-		StartCoroutine(_asr.Synthesis(data.Trim(), s =>
+		try 
 		{
-			if (s.Success)
-			{
-				_audioSource.clip = s.clip;
-				_audioSource.Play();
-				_startPlaying = true;
-				Debug.Log("合成成功，正在播放，共" + _audioSource.clip.length + "s");
-			}
-			else
-			{
-				Debug.LogError(s.err_msg);
-			}
-		}));
+			ActionData action = JsonUtility.FromJson<ActionData>(data);
+			Debug.Log(action.message);
+			StartCoroutine(_asr.Synthesis(action.message.Trim(), s =>
+            {
+                if (s.Success)
+                {
+                    _audioSource.clip = s.clip;
+                    _audioSource.Play();          
+					_animator.SetLayerWeight(1, 1);
+					//_animator.CrossFade("angry@sd_hmd", 0.1f);
+					//_animator.CrossFade("Walking@loop", 0.2f);
+					//_animator.SetBool("thinking_00", true);
+					if (action.expression != null)
+					{
+						_animator.CrossFade(action.expression, 0.1f);
+					} 
+					if (action.action != null)
+                    {
+						_animator.CrossFade(action.action, 0.25f);
+                    } 
+
+
+                    _startPlaying = true;
+                    Debug.Log("合成成功，正在播放，共" + _audioSource.clip.length + "s");
+                }
+                else
+                {
+                    Debug.LogError(s.err_msg);
+                }
+            }));
+		}
+		catch (Exception e)
+		{
+			Debug.LogError(e.Message);
+			_onCmd = false;
+			_cmd = "";
+			SendData(System.Text.Encoding.UTF8.GetBytes("error:" + e.Message));         
+		}      
+
 	}
 
 	void OnApplicationQuit()
