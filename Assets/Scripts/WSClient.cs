@@ -11,7 +11,7 @@ public class WSClient : MonoBehaviour {
 	[Serializable]
     public class ActionData
     {
-		public int type;
+		public string type;
         public string message;
         public string action;
 		public string emotion;
