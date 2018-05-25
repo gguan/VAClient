@@ -16,6 +16,7 @@ public class WSClient : MonoBehaviour {
         public string action;
 		public string emotion;
 		public JSONObject data;
+		public string[] options;
     }
 
 	[Serializable]
@@ -69,16 +70,19 @@ public class WSClient : MonoBehaviour {
             if (!_audioSource.isPlaying)
             {
                 _startPlaying = false;
-                _animator.CrossFade("Standing@loop", 0.25f);
-                _animator.CrossFade("default@sd_hmd", 0.1f);
+                _animator.CrossFade("stand", 0.25f);
+                _animator.CrossFade("default", 0.15f);
 				//ws.Send(System.Text.Encoding.UTF8.GetBytes("Duration: " + _audioSource.clip.length + "s"));
 				var response = new ResponseData();
 				response.message = "Duration: " + _audioSource.clip.length + "s";
 				response.type = 0;
 				ws.Send(JsonUtility.ToJson(response));
                 Debug.Log("播放完毕");
+				ControlAnim.Instance().ShowTips("");
+				ControlAnim.Instance().ShowMicrophone();
             }
         }
+         
 
 		while (ExecuteOnMainThread.Count > 0)
         {
@@ -99,6 +103,8 @@ public class WSClient : MonoBehaviour {
 				{
 					if (s.Success)
 					{
+						ControlAnim.Instance().ShowTips(action.message);
+						ControlAnim.Instance().DismiddMicroPhone();
 						_audioSource.clip = s.clip;
 						_audioSource.Play();
 						_animator.SetLayerWeight(1, 1);
