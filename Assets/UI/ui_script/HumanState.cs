@@ -2,194 +2,275 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class  HumanState : MonoBehaviour {
-
-
-	private FSMSystem fSM;
-	private Animator _animtator;
-
-	public void SetState(PersonState state){
-		fSM.PerformTransition(state);
-	}
-
-	// Use this for initialization
-	void Start () {
-		MakeFSM();
-
-		_animtator = GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>();
-	}
-
-	private void MakeFSM()
-	{
-		fSM = new FSMSystem();
-
-		PersonSleepSatte personSleep = new PersonSleepSatte();
-		personSleep.AddPersonState(PersonState.Idle, StateID.IdleStateId);
-		personSleep.AddPersonState(PersonState.Stop, StateID.StopStateId);
-		personSleep.AddPersonState(PersonState.Play, StateID.PlayStateId);
-
-		PersonIdleSatte personIdleSatte = new PersonIdleSatte(); 
-		personIdleSatte.AddPersonState(PersonState.Sleep, StateID.SleepStateId);
-		personIdleSatte.AddPersonState(PersonState.Stop, StateID.StopStateId);
-		personIdleSatte.AddPersonState(PersonState.Play, StateID.PlayStateId);
-
-		PersonStopSatte personStopSatte = new PersonStopSatte();
-		personStopSatte.AddPersonState(PersonState.Sleep, StateID.SleepStateId);
-		personStopSatte.AddPersonState(PersonState.Idle, StateID.IdleStateId);
-		personStopSatte.AddPersonState(PersonState.Play, StateID.PlayStateId);
-
-		PersonPlaySatte personPlaySatte = new PersonPlaySatte();
-		personPlaySatte.AddPersonState(PersonState.Sleep, StateID.SleepStateId);
-		personPlaySatte.AddPersonState(PersonState.Stop, StateID.StopStateId);
-		personPlaySatte.AddPersonState(PersonState.Idle, StateID.IdleStateId);
-
-		fSM.AddState(personSleep);
-		fSM.AddState(personIdleSatte);
-		fSM.AddState(personStopSatte);
-		fSM.AddState(personPlaySatte);
-   
-	}
-
-	// Update is called once per frame
-	void Update () {
-
-		if(Input.GetKeyDown(KeyCode.A)){
-			SetState(PersonState.Idle);
-		}
-		if (Input.GetKeyDown(KeyCode.B))
-        {
-			SetState(PersonState.Play);
-        }
-		if (Input.GetKeyDown(KeyCode.C))
-        {
-			SetState(PersonState.Sleep);
-        }
-		if (Input.GetKeyDown(KeyCode.D))
-        {
-			SetState(PersonState.Stop);
-        }
-	}
+using WebSocketSharp;
+using Wit.BaiduAip.Speech;
+using SimpleJSON;
 
 
+
+public class HumanState
+{
 
 }
-
-internal class PersonSleepSatte : FSMState
+abstract class PersonChatState : FSMState
 {
-	public PersonSleepSatte()
+
+    public PersonChatState()
+    {
+        stateId = StateID.MusicStateId;
+    }
+
+    public override void Act(GameObject wsClient, GameObject npc)
+    {
+		
+    }
+   
+    public override void Reason(GameObject wsClient, string data)
+    {
+		WSClient wS = wsClient.GetComponent<WSClient>();
+		if (!wS._audioSource.isPlaying){
+			FSMSystem.Instance().PerformTransition(PersonState.Idle);
+		}
+    }
+
+
+    public override void DoBeforeEntering()
+    {
+		// 进入说话状态时  麦克风图标 消失
+        ControlAnim.Instance().DismissMicrophone();
+    }
+
+    public override void DoBeforeLeaving()
+	{ 
+		
+    }
+}
+
+
+internal class PersonSleepState : PersonChatState
+{
+	public PersonSleepState()
     {
 		stateId = StateID.SleepStateId;
     }
 
-    public override void Act(GameObject player, GameObject npc)
+	public override void Act(GameObject wsClient, GameObject npc)
     {
         //Debug.Log("log_stateId_Act" + stateId.ToString());
     }
 
-    public override void Reason(GameObject player, GameObject npc)
+	public override void Reason(GameObject wsClient , string data)
     {
-        Debug.Log("log_stateId_Reason" + stateId.ToString());
     }
 
     public override void DoBeforeEntering()
     {
         base.DoBeforeEntering();
-		Debug.Log("--------- sleep");
-
     }
+
+	public override void DoBeforeLeaving()
+    {
+        base.DoBeforeLeaving();
+    }
+
+
+     
 }
-internal class PersonPlaySatte : FSMState
+
+internal class PersonMusicState : PersonChatState
 {
-	public PersonPlaySatte(){
-		stateId = StateID.PlayStateId;
+	private bool isPlaying = false;
+	public PersonMusicState(){
+		stateId = StateID.MusicStateId;
 	}
 
-	public override void Act(GameObject player, GameObject npc)
+	public override void Act(GameObject wsClient, GameObject npc)
 	{
-		//Debug.Log("log_stateId_Act" + stateId.ToString());
+
+		 WSClient wS = wsClient.GetComponent<WSClient>();;
+		Debug.Log("检测是否可以唱歌唱歌");
+		if (!wS._audioSource.isPlaying)
+		{
+            Debug.Log("开始唱歌");
+			// 语音说完  播放mp3
+			wS.StartCoroutine(loadMusic(wS._audioSource));
+		}
+
+		if (!isPlaying && !wS._audioSource.isPlaying)
+		{
+			Debug.Log("唱歌完成");
+			FSMSystem.Instance().PerformTransition(PersonState.Idle);
+
+		}
 	}
 
-	public override void Reason(GameObject player, GameObject npc)
-	{
-		Debug.Log("log_stateId_Reason" + stateId.ToString());
-	}
+	public override void Reason(GameObject wsClient,  string data){
+		
+    }
 
 	public override void DoBeforeEntering()
 	{
 		base.DoBeforeEntering();
-		Debug.Log("--------- play");
-		GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>().CrossFade("sad", 0.2f);
+
 	}
 
 	public override void DoBeforeLeaving()
 	{
 		base.DoBeforeLeaving();
-		GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>().CrossFade("default@sd_hmd", 0.2f);
 	}
+
+	IEnumerator loadMusic(AudioSource _audioSource)
+    {
+        WWW music = new WWW("http://m10.music.126.net/20180528174954/7b54fbd7abe9f9893ddcc805781b9f3f/ymusic/fc6d/0a5c/db75/2b16355237283456b93e133c2d8ad6ef.mp3");
+        yield return music;
+
+        AudioClip lamusic = music.GetAudioClip
+                                 (false, false, AudioType.MPEG);
+        _audioSource.clip = lamusic;
+        _audioSource.Play();
+        isPlaying = true;
+    }
 
 }
 
-internal class PersonIdleSatte : FSMState
+internal class PersonIdleState : FSMState
 {
-	public PersonIdleSatte()
+	public PersonIdleState()
     {
 		stateId = StateID.IdleStateId;
     }
 
-    public override void Act(GameObject player, GameObject npc)
+    public override void Act(GameObject wsClient, GameObject npc)
     {
-        //Debug.Log("log_stateId_Act" + stateId.ToString());
     }
 
-    public override void Reason(GameObject player, GameObject npc)
+	public override void Reason(GameObject wsClient, string data)
     {
-        Debug.Log("log_stateId_Reason" + stateId.ToString());
     }
 
     public override void DoBeforeEntering()
     {
         base.DoBeforeEntering();
-		Debug.Log("---------idle");
-		Debug.Log("---------进入IDLE状态时执行 微笑");
-		GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>().CrossFade("smile", 0.2f);
+		ControlAnim.Instance().ShowMicrophone();
     }
 
 	public override void DoBeforeLeaving()
 	{
 		base.DoBeforeLeaving();
-		Debug.Log("---------离开IDLE状态时执行 生气");
-		GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>().CrossFade("angry", 0.2f);
 	}
 }
 
-internal class PersonStopSatte : FSMState
+
+internal class PersonAwakeState : PersonChatState
 {
-	public PersonStopSatte()
+	public PersonAwakeState()
+    {
+		stateId = StateID.AwakeStateId;
+    }
+
+    public override void Act(GameObject wsClient, GameObject npc)
+    {
+    }
+
+    public override void Reason(GameObject wsClient, string data)
+    {
+		base.Reason(wsClient, data);
+    }
+
+    public override void DoBeforeEntering()
+    {
+        base.DoBeforeEntering();
+    }
+
+    public override void DoBeforeLeaving()
+    {
+		base.DoBeforeLeaving();
+    }
+}
+
+internal class PersonStopState : PersonChatState
+{
+	public PersonStopState()
     {
 		stateId = StateID.StopStateId;
     }
 
-    public override void Act(GameObject player, GameObject npc)
+	public override void Act(GameObject wsClient, GameObject npc)
     {
     }
 
-    public override void Reason(GameObject player, GameObject npc)
+	public override void Reason(GameObject wsClient, string data)
     {
-        Debug.Log("log_stateId_Reason" + stateId.ToString());
+		base.Reason(wsClient, data);
     }
 
     public override void DoBeforeEntering()
     {
-        base.DoBeforeEntering();
-		Debug.Log("---------进入停止状态时执行 微笑");
-		GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>().CrossFade("smile", 0.2f);
+		base.DoBeforeEntering();
     }
 
 	public override void DoBeforeLeaving()
 	{
 		base.DoBeforeLeaving();
-		Debug.Log("---------离开停止状态时执行 生气");
-		GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>().CrossFade("angry", 0.2f);
 	}
+}
+
+
+internal class PersonShowWeatherState :PersonChatState{
+
+	public PersonShowWeatherState(){
+		stateId = StateID.ShowWeatherStateId;
+	}
+
+	public override void Act(GameObject wsClient, GameObject npc)
+	{
+		
+	}
+
+	public override void Reason(GameObject wsClient, string data)
+	{
+		base.Reason(wsClient, data);
+	}
+
+	public override void DoBeforeEntering()
+    {
+        base.DoBeforeEntering();
+		ControlAnim.Instance().ShowWeather();
+    }
+
+    public override void DoBeforeLeaving()
+    {
+        base.DoBeforeLeaving();
+		ControlAnim.Instance().DissmissWeather();
+    }
+}
+
+
+internal class PersonShowConstellationState :PersonChatState {
+	public PersonShowConstellationState()
+    {
+		stateId = StateID.ShowConstellationStateId;
+    }
+
+	public override void Act(GameObject wsClient, GameObject npc)
+    {
+       
+    }
+
+	public override void Reason(GameObject wsClient, string data)
+    {
+		base.Reason(wsClient, data);
+    }
+
+    public override void DoBeforeEntering()
+    {
+        base.DoBeforeEntering();
+		ControlAnim.Instance().ShowConstellation();
+    }
+
+    public override void DoBeforeLeaving()
+    {
+        base.DoBeforeLeaving();
+		ControlAnim.Instance().DismissConstellation();
+    }
 }

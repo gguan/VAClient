@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public  enum  PersonState{
-    None,
-    Sleep,
-    Idle,
-    Play,
-    Stop
+public enum PersonState
+{
+	None,
+	Sleep,
+	Idle,
+	Music,
+	Stop,
+	ShowWeather,
+	Awake,
+    ShowConstellation
 }
 
 public enum StateID
@@ -15,8 +19,11 @@ public enum StateID
 	NoneStateId=0,
 	SleepStateId = 1,
 	IdleStateId = 2,
-	PlayStateId = 3,
-	StopStateId = 4
+	MusicStateId = 3,
+	StopStateId = 4,
+    ShowWeatherStateId =5,
+    ShowConstellationStateId=6,
+    AwakeStateId,
 }
 
 public abstract class FSMState{
@@ -107,14 +114,14 @@ public abstract class FSMState{
     /// This method decides if the state should transition to another on its list
     /// NPC is a reference to the object that is controlled by this class
     /// </summary>
-    public abstract void Reason(GameObject player, GameObject npc);
+	public abstract void Reason(GameObject wsClient, string data);
 
     /// <summary>
     /// This method controls the behavior of the NPC in the game World.
     /// Every action, movement or communication the NPC does should be placed here
     /// NPC is a reference to the object that is controlled by this class
     /// </summary>
-    public abstract void Act(GameObject player, GameObject npc);
+	public abstract void Act(GameObject wsClient, GameObject npc);
 }
 
 
@@ -135,7 +142,68 @@ public class FSMSystem
     public StateID CurrentStateID { get { return currentStateID; } }
     public FSMState CurrentState { get { return currentState; } }
 
-    public FSMSystem()
+
+	private static FSMSystem _instance;
+	private static object _lock = new object();
+	public static FSMSystem Instance()
+    {
+		if (_instance == null)
+        {
+
+            lock (_lock)
+            {
+				if (_instance == null)
+                {
+					_instance = new FSMSystem();
+
+					PersonSleepState personSleep = new PersonSleepState();
+					personSleep.AddPersonState(PersonState.Awake, StateID.AwakeStateId);
+
+                    PersonIdleState personIdleState = new PersonIdleState();
+					personIdleState.AddPersonState(PersonState.Sleep, StateID.SleepStateId);
+					personIdleState.AddPersonState(PersonState.Music, StateID.MusicStateId);
+					personIdleState.AddPersonState(PersonState.ShowWeather, StateID.ShowWeatherStateId);
+					personIdleState.AddPersonState(PersonState.ShowConstellation, StateID.ShowConstellationStateId);
+					personIdleState.AddPersonState(PersonState.Stop, StateID.StopStateId);
+
+
+                    PersonStopState personStopState = new PersonStopState();
+					personStopState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+
+
+                    
+                    PersonMusicState personPlaySate = new PersonMusicState();
+					personPlaySate.AddPersonState(PersonState.Stop, StateID.StopStateId);
+					personPlaySate.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+
+
+                    PersonShowWeatherState showWeatherState = new PersonShowWeatherState();
+                    showWeatherState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+
+                    PersonShowConstellationState showConstellationState = new PersonShowConstellationState();
+                    showConstellationState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+
+					PersonAwakeState awakeState = new PersonAwakeState();
+					awakeState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+
+					_instance.AddState(personSleep);
+					_instance.AddState(awakeState);
+					_instance.AddState(personIdleState);
+					_instance.AddState(personStopState);
+					_instance.AddState(personPlaySate);
+					_instance.AddState(showWeatherState);
+					_instance.AddState(showConstellationState);
+
+
+}
+            }
+        }
+        return _instance;
+    }
+
+
+
+	private FSMSystem()
     {
 		fSMStates = new List<FSMState>();
     }
