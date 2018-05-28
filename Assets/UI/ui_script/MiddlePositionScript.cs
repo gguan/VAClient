@@ -11,9 +11,9 @@ public class MiddlePositionScript : MonoBehaviour {
 		mText = gameObject.GetComponent<Text>();
 
 
-		transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width,Screen.height/2);
+		transform.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width - 50,Screen.height-50 );
 		float x = transform.parent.position.x;
-        float y = transform.parent.position.y + (Screen.height / 2 - 150);
+        float y = transform.parent.position.y;
 		transform.SetPositionAndRotation(new Vector3(x, y, 0), new Quaternion());
         
 
@@ -23,7 +23,7 @@ public class MiddlePositionScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(Input.GetKeyDown(KeyCode.Space)){
-			ControlAnim.Instance().ShowTips("dsjhkfjskjk");
+			ControlAnim.Instance().ShowTips(" ");
 		}
 	}
 }

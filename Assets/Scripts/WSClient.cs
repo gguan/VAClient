@@ -6,17 +6,19 @@ using System;
 using Wit.BaiduAip.Speech;
 using SimpleJSON;
 
+
+
 public class WSClient : MonoBehaviour {
 
 	[Serializable]
     public class ActionData
     {
-		public string type;
+        public string type;
         public string message;
         public string action;
-		public string emotion;
-		public JSONObject data;
-		public string[] options;
+        public string emotion;
+        public JSONObject data;
+        public string[] options;
     }
 
 	[Serializable]
@@ -27,8 +29,9 @@ public class WSClient : MonoBehaviour {
         public JSONObject data;
     }
     
-	WebSocket ws;  
-
+	 WebSocket ws;  
+	private FSMSystem fSM;
+ 
 	private string ip = "127.0.0.1";
 
 	private bool _connected = false;
@@ -41,11 +44,12 @@ public class WSClient : MonoBehaviour {
     const string APIKey = "NgT1OZT4jTdTZizBgPvWkVnB";
     const string SecretKey = "e7766ab06a495cf0ddba6598efb376af";
     private Tts _asr;
-
+    
 	public AudioSource _audioSource;
     public Animator _animator;
     public AnimationClip[] _animClips;
-	bool _startPlaying;
+	public bool _startPlaying;
+     
 	GUIStyle guiStyle = new GUIStyle();
 
 	// Use this for initialization
@@ -61,10 +65,20 @@ public class WSClient : MonoBehaviour {
 		guiStyle.fontSize = 20;
         guiStyle.wordWrap = true;
 
-	}
+		MakeFSM();
 	
+	}
+
+
+    private void MakeFSM()
+    {
+		fSM = FSMSystem.Instance();
+    }
+
+
 	// Update is called once per frame
 	void Update () {
+		
 		if (_startPlaying)
         {
             if (!_audioSource.isPlaying)
@@ -79,10 +93,11 @@ public class WSClient : MonoBehaviour {
 				ws.Send(JsonUtility.ToJson(response));
                 Debug.Log("播放完毕");
 				ControlAnim.Instance().ShowTips("");
-				ControlAnim.Instance().ShowMicrophone();
             }
+			fSM.CurrentState.Reason(gameObject, "");
+			fSM.CurrentState.Act(gameObject, gameObject);
         }
-         
+       
 
 		while (ExecuteOnMainThread.Count > 0)
         {
@@ -90,6 +105,7 @@ public class WSClient : MonoBehaviour {
         }
               
 	}
+
 
 	void ProcessCmd(string data)
     {
@@ -101,10 +117,10 @@ public class WSClient : MonoBehaviour {
 			{
 				StartCoroutine(_asr.Synthesis(action.message.Trim(), s =>
 				{
+
 					if (s.Success)
 					{
-						ControlAnim.Instance().ShowTips(action.message);
-						ControlAnim.Instance().DismiddMicroPhone();
+		
 						_audioSource.clip = s.clip;
 						_audioSource.Play();
 						_animator.SetLayerWeight(1, 1);
@@ -122,6 +138,38 @@ public class WSClient : MonoBehaviour {
 
 						_startPlaying = true;
 						Debug.Log("合成成功，正在播放，共" + _audioSource.clip.length + "s");
+
+						if (action.options != null && action.options.Length > 0)
+                        {
+                            GameObject gameUI = GameObject.Find("ui");
+                            AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
+                            add.createNewBubble(action.options);
+                        }
+						ControlAnim.Instance().ShowTips(action.message);
+
+						switch (action.type)
+                        {
+                            case "weather":
+                                fSM.PerformTransition(PersonState.ShowWeather);
+                                break;
+                            case "horoscope":
+                                fSM.PerformTransition(PersonState.ShowConstellation);
+                                break;
+                            case "awake":
+                                fSM.PerformTransition(PersonState.Awake);
+                                break;
+                            case "music":
+                                fSM.PerformTransition(PersonState.Music);
+                                break;
+                            case "stop":
+                                fSM.PerformTransition(PersonState.Stop);
+                                break;
+                            case "sleep":
+                                fSM.PerformTransition(PersonState.Sleep);
+                                break;
+                        }
+                   
+
 						var response = new ResponseData();
                         response.message = "Data received";
                         response.type = 1;
@@ -233,4 +281,5 @@ public class WSClient : MonoBehaviour {
 
     }
 
+     
 }

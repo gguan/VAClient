@@ -82,13 +82,6 @@ public class ControlAnim
 		}else if("chat".Equals(action.type)){
 			
 		}
-
-		if(action.options!=null && action.options.Length >0){
-			GameObject gameUI =	GameObject.Find("ui");
-			AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
-			add.createNewBubble(action.options);
-		}
-        
 	}
 
 
@@ -99,7 +92,7 @@ public class ControlAnim
 		t.text = info;
 	}
 
-	private void ShowWeather()
+	public void ShowWeather()
 	{
 		if (weatherAnimtor == null)
 		{
@@ -117,7 +110,7 @@ public class ControlAnim
 	}
 
 
-	private void DissmissWeather()
+	public void DissmissWeather()
 	{
 		if (weatherAnimtor == null)
 		{
@@ -129,7 +122,7 @@ public class ControlAnim
 	}
 
 
-	private void ShowConstellation()
+	public void ShowConstellation()
 	{
 		Animator constellationAnimtor = FindAnimtor("constellations_luck");
 		constellationAnimtor.SetTrigger(showConstellation);
@@ -138,7 +131,7 @@ public class ControlAnim
 	}
 
 
-	private void DismissConstellation()
+	public void DismissConstellation()
 	{
 		Animator constellationAnimtor = FindAnimtor("constellations_luck");
 		constellationAnimtor.SetTrigger(dismissConstellation);
@@ -191,10 +184,10 @@ public class ControlAnim
 
 
 	public void ShowMicrophone(){
-		FindAnimtor("microphone").SetTrigger("show_microphone");;
+		FindAnimtor("microphone").SetTrigger("show_microphone");
 	}
 
-	public void DismiddMicroPhone(){
+	public void DismissMicrophone(){
 		FindAnimtor("microphone").SetTrigger("dismiss_microphone");
 	}
 
