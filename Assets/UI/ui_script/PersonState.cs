@@ -11,19 +11,21 @@ public enum PersonState
 	Stop,
 	ShowWeather,
 	Awake,
-    ShowConstellation
+	ShowConstellation,
+	Chat
 }
 
 public enum StateID
 {
-	NoneStateId=0,
+	NoneStateId = 0,
 	SleepStateId = 1,
 	IdleStateId = 2,
 	MusicStateId = 3,
 	StopStateId = 4,
-    ShowWeatherStateId =5,
-    ShowConstellationStateId=6,
-    AwakeStateId,
+	ShowWeatherStateId = 5,
+	ShowConstellationStateId = 6,
+	AwakeStateId,
+	ChatStateId
 }
 
 public abstract class FSMState{
@@ -114,14 +116,14 @@ public abstract class FSMState{
     /// This method decides if the state should transition to another on its list
     /// NPC is a reference to the object that is controlled by this class
     /// </summary>
-	public abstract void Reason(GameObject wsClient, string data);
+	public abstract void Reason(GameObject gameObject, string data);
 
     /// <summary>
     /// This method controls the behavior of the NPC in the game World.
     /// Every action, movement or communication the NPC does should be placed here
     /// NPC is a reference to the object that is controlled by this class
     /// </summary>
-	public abstract void Act(GameObject wsClient, GameObject npc);
+	public abstract void Act(GameObject gameObject, GameObject npc);
 }
 
 
@@ -165,7 +167,7 @@ public class FSMSystem
 					personIdleState.AddPersonState(PersonState.ShowWeather, StateID.ShowWeatherStateId);
 					personIdleState.AddPersonState(PersonState.ShowConstellation, StateID.ShowConstellationStateId);
 					personIdleState.AddPersonState(PersonState.Stop, StateID.StopStateId);
-
+					personIdleState.AddPersonState(PersonState.Chat, StateID.ChatStateId);
 
                     PersonStopState personStopState = new PersonStopState();
 					personStopState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
@@ -186,6 +188,9 @@ public class FSMSystem
 					PersonAwakeState awakeState = new PersonAwakeState();
 					awakeState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
 
+					PersonChatState chatState = new PersonChatState();
+					chatState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+
 					_instance.AddState(personSleep);
 					_instance.AddState(awakeState);
 					_instance.AddState(personIdleState);
@@ -193,6 +198,7 @@ public class FSMSystem
 					_instance.AddState(personPlaySate);
 					_instance.AddState(showWeatherState);
 					_instance.AddState(showConstellationState);
+					_instance.AddState(chatState);
 
 
 }
@@ -276,7 +282,7 @@ public class FSMSystem
     ///  doesn't have a target state for the transition passed, 
     /// an ERROR message is printed.
     /// </summary>
-	public void PerformTransition(PersonState personState)
+	public void PerformTransition(PersonState personState )
     {
         // Check for NullTransition before changing the current state
 		if (personState == PersonState.None)
