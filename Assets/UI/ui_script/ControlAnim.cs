@@ -14,8 +14,8 @@ public class ControlAnim
 {
 
 
-	private int showWindow = Animator.StringToHash("show_window");
-	private int dismissWindow = Animator.StringToHash("dismiss_window");
+	private int showWindow = Animator.StringToHash("show_weather");
+	private int dismissWindow = Animator.StringToHash("dismiss_weather");
 	private int dismiss6 = Animator.StringToHash("dismiss");
 	private int appear6 = Animator.StringToHash("appear");
 	private int suoxiao = Animator.StringToHash("suoxiao");
