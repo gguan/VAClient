@@ -68,7 +68,7 @@ public class ControlAnim
 	}
 
 
-	internal void ShowActionWindow(WSClient.ActionData action)
+	internal void ShowActionWindow(WSClient.ActionData<SimpleJSON.JSONObject> action)
 	{
 		ShowTips(action.message);
 		FindAnimtor("SD_unitychan_humanoid").CrossFade("StandHand", 0.2f);

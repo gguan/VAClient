@@ -6,30 +6,50 @@ using System;
 using Wit.BaiduAip.Speech;
 using SimpleJSON;
 
-
-
-public class WSClient : MonoBehaviour {
+public class WSClient : MonoBehaviour
+{
 
 	[Serializable]
-    public class ActionData
+	public class ActionData<T>
+	{
+		public string type;
+		public string message;
+		public string action;
+		public string emotion;
+		public T data;
+		public string[] options;
+	}
+
+	[Serializable]
+	public class ResponseData
+	{
+		public int type;
+		public string message;
+		public JSONObject data;
+	}
+
+
+	[Serializable]
+	public class ServerStateData{
+		public static string Order_Listening ="order_listening";
+		public string state;
+	}
+
+	[Serializable]
+    public class STTData
     {
-        public string type;
-        public string message;
-        public string action;
-        public string emotion;
-        public JSONObject data;
-        public string[] options;
+        public string text ;
     }
 
 	[Serializable]
-    public class ResponseData
-    {
-        public int type;
-        public string message;
-        public JSONObject data;
-    }
-    
-	 WebSocket ws;  
+	public class MusicData{
+		public string id;
+		public string name;
+		public string url;
+	}
+
+
+	public WebSocket ws;  
 	private FSMSystem fSM;
  
 	private string ip = "127.0.0.1";
@@ -43,12 +63,11 @@ public class WSClient : MonoBehaviour {
 	// Baidu AIP
     const string APIKey = "NgT1OZT4jTdTZizBgPvWkVnB";
     const string SecretKey = "e7766ab06a495cf0ddba6598efb376af";
-    private Tts _asr;
+	public Tts _asr;
     
 	public AudioSource _audioSource;
     public Animator _animator;
     public AnimationClip[] _animClips;
-	public bool _startPlaying;
      
 	GUIStyle guiStyle = new GUIStyle();
 
@@ -57,7 +76,6 @@ public class WSClient : MonoBehaviour {
           
 		SetupServer();
 
-		_startPlaying = false;
 		// 初始化百度TTS
         _asr = new Tts(APIKey, SecretKey);
         StartCoroutine(_asr.GetAccessToken());
@@ -66,125 +84,71 @@ public class WSClient : MonoBehaviour {
         guiStyle.wordWrap = true;
 
 		MakeFSM();
-	
+	 
 	}
 
-
+ 
     private void MakeFSM()
     {
 		fSM = FSMSystem.Instance();
     }
 
-
 	// Update is called once per frame
 	void Update () {
-		
-		if (_startPlaying)
-        {
-            if (!_audioSource.isPlaying)
-            {
-                _startPlaying = false;
-                _animator.CrossFade("stand", 0.25f);
-                _animator.CrossFade("default", 0.15f);
-				//ws.Send(System.Text.Encoding.UTF8.GetBytes("Duration: " + _audioSource.clip.length + "s"));
-				var response = new ResponseData();
-				response.message = "Duration: " + _audioSource.clip.length + "s";
-				response.type = 0;
-				ws.Send(JsonUtility.ToJson(response));
-                Debug.Log("播放完毕");
-				ControlAnim.Instance().ShowTips("");
-            }
-			fSM.CurrentState.Reason(gameObject, "");
-			fSM.CurrentState.Act(gameObject, gameObject);
-        }
-       
 
+		FSMSystem.Instance().CurrentState.Act(gameObject,gameObject);
 		while (ExecuteOnMainThread.Count > 0)
         {
             ExecuteOnMainThread.Dequeue().Invoke();
         }
-              
 	}
-
 
 	void ProcessCmd(string data)
     {
 		try
 		{
-			ActionData action = JsonUtility.FromJson<ActionData>(data);
-			Debug.Log(action.message);         
-			ExecuteOnMainThread.Enqueue(() =>
-			{
-				StartCoroutine(_asr.Synthesis(action.message.Trim(), s =>
-				{
+			ActionData<JSONObject> action = JsonUtility.FromJson<ActionData<JSONObject>>(data);
 
-					if (s.Success)
-					{
+			ExecuteOnMainThread.Enqueue(() => {
+				switch (action.type)
+                {
+                    case "weather":
+                        fSM.PerformTransition(PersonState.ShowWeather);
+                        break;
+                    case "horoscope":
+                        fSM.PerformTransition(PersonState.ShowConstellation);
+                        break;
+                    case "awake":
+                        fSM.PerformTransition(PersonState.Awake);
+                        break;
+					case "chat":
+                        fSM.PerformTransition(PersonState.Chat);
+                        break;
+                    case "music":
+                        fSM.PerformTransition(PersonState.Music);
+                        break;
+                    case "stop":
+                        fSM.PerformTransition(PersonState.Stop);
+                        break;
+                    case "sleep":
+                        fSM.PerformTransition(PersonState.Sleep);
+                        break;
+                    case "server_state":
+                        ActionData<ServerStateData> mServerStateData = JsonUtility.FromJson<ActionData<ServerStateData>>(data);
+						if(ServerStateData.Order_Listening.Equals(mServerStateData.data.state)){
+                          ControlAnim.Instance().ShowMicrophone();
+                        }else{
+                          ControlAnim.Instance().DismissMicrophone();
+                        }
+                        break;
+                    case "stt":
+						ActionData<STTData> mStt = JsonUtility.FromJson<ActionData<STTData>>(data);
+						ControlAnim.Instance().ShowTips(mStt.data.text);
+                        break;
+                }
+				fSM.CurrentState.Reason(gameObject, data);
+            });
 		
-						_audioSource.clip = s.clip;
-						_audioSource.Play();
-						_animator.SetLayerWeight(1, 1);
-						//_animator.CrossFade("angry@sd_hmd", 0.1f);
-						//_animator.CrossFade("Walking@loop", 0.2f);
-						//_animator.SetBool("thinking_00", true);
-						if (action.emotion != null)
-						{
-							_animator.CrossFade(action.emotion, 0.1f);
-						}
-						if (action.action != null)
-						{
-							_animator.CrossFade(action.action, 0.25f);
-						}
-
-						_startPlaying = true;
-						Debug.Log("合成成功，正在播放，共" + _audioSource.clip.length + "s");
-
-						if (action.options != null && action.options.Length > 0)
-                        {
-                            GameObject gameUI = GameObject.Find("ui");
-                            AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
-                            add.createNewBubble(action.options);
-                        }
-						ControlAnim.Instance().ShowTips(action.message);
-
-						switch (action.type)
-                        {
-                            case "weather":
-                                fSM.PerformTransition(PersonState.ShowWeather);
-                                break;
-                            case "horoscope":
-                                fSM.PerformTransition(PersonState.ShowConstellation);
-                                break;
-                            case "awake":
-                                fSM.PerformTransition(PersonState.Awake);
-                                break;
-                            case "music":
-                                fSM.PerformTransition(PersonState.Music);
-                                break;
-                            case "stop":
-                                fSM.PerformTransition(PersonState.Stop);
-                                break;
-                            case "sleep":
-                                fSM.PerformTransition(PersonState.Sleep);
-                                break;
-                        }
-                   
-
-						var response = new ResponseData();
-                        response.message = "Data received";
-                        response.type = 1;
-                        ws.Send(JsonUtility.ToJson(response));
-					}
-					else
-					{
-						Debug.LogError(s.err_msg);
-						var response = new ResponseData();
-						response.message = s.err_msg;
-                        response.type = 0;
-                        ws.Send(JsonUtility.ToJson(response));
-					}
-				}));
-			});
 		}
         catch (Exception e)
         {
@@ -195,6 +159,7 @@ public class WSClient : MonoBehaviour {
             ws.Send(JsonUtility.ToJson(response));
         }      
     }
+
 
 	void SetupServer()
     {

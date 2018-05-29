@@ -1614,7 +1614,6 @@ MonoBehaviour:
   _audioSource: {fileID: 853022160}
   _animator: {fileID: 853022167}
   _animClips: []
-  _startPlaying: 0
 --- !u!1 &1479160462
 GameObject:
   m_ObjectHideFlags: 0
