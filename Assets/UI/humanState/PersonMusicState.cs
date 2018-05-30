@@ -43,7 +43,7 @@ public class PersonMusicState : PersonPlayingState {
         base.DoBeforeLeaving();
     }
 
-    IEnumerator loadMusic(AudioSource _audioSource)
+    IEnumerator loadMusic()
     {
 		try{
 			if (wSClient != null && actionData != null)
@@ -66,6 +66,7 @@ public class PersonMusicState : PersonPlayingState {
                                      (false, false, AudioType.MPEG);
             _audioSource.clip = lamusic;
             _audioSource.Play();
+			isStartMusic = true;
 		}catch (Exception exc){
 			isStartMusic = false;
 			Debug.LogError(exc.Message);
@@ -80,10 +81,8 @@ public class PersonMusicState : PersonPlayingState {
         {
             Debug.Log("开始唱歌");
             // 语音说完  播放mp3
-            isStartMusic = true;
-            WSClient.ExecuteOnMainThread.Enqueue(() => {
-				wSClient.StartCoroutine(loadMusic(_audioSource));
-            });
+            
+			wSClient.StartCoroutine(loadMusic());
         }
     }
 }

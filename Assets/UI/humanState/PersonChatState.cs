@@ -32,10 +32,7 @@ public class PersonChatState :FSMState {
 				_animator.CrossFade("stand", 0.25f);
 				_animator.CrossFade("default", 0.15f);
                 //ws.Send(System.Text.Encoding.UTF8.GetBytes("Duration: " + _audioSource.clip.length + "s"));
-                var response = new WSClient.ResponseData();
-                response.message = "Duration: " +  _audioSource.clip.length + "s";
-                response.type = "info";
-                wS.ws.Send(JsonUtility.ToJson(response));
+               
 				Debug.Log("播放完毕");
                 ControlAnim.Instance().ShowTips("");
                 AfterVoiceEnd();
