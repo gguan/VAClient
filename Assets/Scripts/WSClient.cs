@@ -9,108 +9,110 @@ using SimpleJSON;
 public class WSClient : MonoBehaviour
 {
 
-	[Serializable]
-	public class ActionData<T>
-	{
-		public string type;
-		public string message;
-		public string action;
-		public string emotion;
-		public T data;
-		public string[] options;
-	}
-
-	[Serializable]
-	public class ResponseData
-	{
-		public int type;
-		public string message;
-		public JSONObject data;
-	}
-
-
-	[Serializable]
-	public class ServerStateData{
-		public static string Order_Listening ="order_listening";
-		public string state;
-	}
-
-	[Serializable]
-    public class STTData
+    [Serializable]
+    public class RequestData<T>
     {
-        public string text ;
+        public string type;
+        public string message;
+        public string action;
+        public string emotion;
+        public T data;
+        public string[] options;
     }
 
-	[Serializable]
-	public class MusicData{
-		public string id;
-		public string name;
-		public string url;
-	}
+    [Serializable]
+    public class ResponseData
+    {
+        public int type;
+        public string message;
+        public JSONObject data;
+    }
 
 
-	public WebSocket ws;  
-	private FSMSystem fSM;
- 
-	private string ip = "127.0.0.1";
+    [Serializable]
+    public class ServerStateData
+    {
+        public static string Order_Listening = "order_listening";
+        public string state;
+    }
 
-	private bool _connected = false;
+    [Serializable]
+    public class STTData
+    {
+        public string text;
+    }
 
-	bool _onCmd = false;
-    string _cmd = "";
-	public readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
+    [Serializable]
+    public class MusicData
+    {
+        public string id;
+        public string name;
+        public string url;
+    }
 
-	// Baidu AIP
+    public WebSocket ws;
+    private FSMSystem fSM;
+
+    private string ip = "127.0.0.1";
+
+    private bool _connected = false;
+
+    bool _onCmd = false;
+    public readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
+
+    // Baidu AIP
     const string APIKey = "NgT1OZT4jTdTZizBgPvWkVnB";
     const string SecretKey = "e7766ab06a495cf0ddba6598efb376af";
-	public Tts _asr;
-    
-	public AudioSource _audioSource;
+    public Tts _asr;
+
+    public AudioSource _audioSource;
     public Animator _animator;
     public AnimationClip[] _animClips;
-     
-	GUIStyle guiStyle = new GUIStyle();
 
-	// Use this for initialization
-	void Start () {
-          
-		SetupServer();
+    GUIStyle guiStyle = new GUIStyle();
 
-		// 初始化百度TTS
+    // Use this for initialization
+    void Start()
+    {
+
+        SetupServer();
+
+        // 初始化百度TTS
         _asr = new Tts(APIKey, SecretKey);
         StartCoroutine(_asr.GetAccessToken());
 
-		guiStyle.fontSize = 20;
+        guiStyle.fontSize = 20;
         guiStyle.wordWrap = true;
 
-		MakeFSM();
-	 
-	}
-
- 
-    private void MakeFSM()
-    {
-		fSM = FSMSystem.Instance();
+        MakeFSM();
     }
 
-	// Update is called once per frame
-	void Update () {
 
-		FSMSystem.Instance().CurrentState.Act(gameObject,gameObject);
-		while (ExecuteOnMainThread.Count > 0)
+    private void MakeFSM()
+    {
+        fSM = FSMSystem.Instance();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+        FSMSystem.Instance().CurrentState.Act(gameObject, gameObject);
+        while (ExecuteOnMainThread.Count > 0)
         {
             ExecuteOnMainThread.Dequeue().Invoke();
         }
-	}
+    }
 
-	void ProcessCmd(string data)
+    void ProcessRequest(string data)
     {
-		try
-		{
-			ActionData<JSONObject> action = JsonUtility.FromJson<ActionData<JSONObject>>(data);
+        try
+        {
+            RequestData<JSONObject> reqData = JsonUtility.FromJson<RequestData<JSONObject>>(data);
 
-			ExecuteOnMainThread.Enqueue(() => {
-				switch (action.type)
+            ExecuteOnMainThread.Enqueue(() =>
+            {
+                switch (reqData.type)
                 {
                     case "weather":
                         fSM.PerformTransition(PersonState.ShowWeather);
@@ -121,7 +123,7 @@ public class WSClient : MonoBehaviour
                     case "awake":
                         fSM.PerformTransition(PersonState.Awake);
                         break;
-					case "chat":
+                    case "chat":
                         fSM.PerformTransition(PersonState.Chat);
                         break;
                     case "music":
@@ -134,84 +136,85 @@ public class WSClient : MonoBehaviour
                         fSM.PerformTransition(PersonState.Sleep);
                         break;
                     case "server_state":
-                        ActionData<ServerStateData> mServerStateData = JsonUtility.FromJson<ActionData<ServerStateData>>(data);
-						if(ServerStateData.Order_Listening.Equals(mServerStateData.data.state)){
-                          ControlAnim.Instance().ShowMicrophone();
-                        }else{
-                          ControlAnim.Instance().DismissMicrophone();
+                        RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
+                        if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
+                        {
+                            ControlAnim.Instance().ShowMicrophone();
+                        }
+                        else
+                        {
+                            ControlAnim.Instance().DismissMicrophone();
                         }
                         break;
                     case "stt":
-						ActionData<STTData> mStt = JsonUtility.FromJson<ActionData<STTData>>(data);
-						ControlAnim.Instance().ShowTips(mStt.data.text);
+                        RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
+                        ControlAnim.Instance().ShowTips(mStt.data.text);
                         break;
                 }
-				fSM.CurrentState.Reason(gameObject, data);
+                fSM.CurrentState.Reason(gameObject, data);
             });
-		
-		}
+
+        }
         catch (Exception e)
         {
             Debug.LogError(e.Message);
-			var response = new ResponseData();
-			response.message = e.Message;
+            var response = new ResponseData();
+            response.message = e.Message;
             response.type = 0;
             ws.Send(JsonUtility.ToJson(response));
-        }      
+        }
     }
 
 
-	void SetupServer()
+    void SetupServer()
     {
-		Debug.Log("连接websocket");
-		ws = new WebSocket("ws://"+ip+":9000");
-        // Event at connection start.
+        ws = new WebSocket("ws://" + ip + ":9000");
+
         ws.OnOpen += (sender, e) =>
         {
-			_connected = true;
+            _connected = true;
             Debug.Log("Opended");
         };
-        // Event when receiving a message.
+
         ws.OnMessage += (sender, e) =>
         {
-			Debug.Log("Received: " + e.Data);
-            ProcessCmd(e.Data);         
+            Debug.Log("Received: " + e.Data);
+            ProcessRequest(e.Data);
         };
 
-		ws.OnClose += (sender, e) => {
-			_connected = false;
+        ws.OnClose += (sender, e) =>
+        {
+            _connected = false;
         };
 
-		try
-		{
-			// Connection.
-			ws.Connect();         
-		}
-		catch (Exception ex)
+        try
+        {
+            Debug.Log("连接websocket...");
+            ws.Connect();
+        }
+        catch (Exception ex)
         {
             Debug.LogError("连接websocket失败: " + ex.Message);
         }
 
-		Debug.Log("结果" + _connected);
+        Debug.Log("连接结果: " + _connected);
 
     }
 
-	void OnApplicationQuit()
+    void OnApplicationQuit()
     {
         ws.Close();
     }
 
-	void OnGUI()
+    void OnGUI()
     {
-        showText(); //语音文字显示
-        showOptionText(); //右下角 操作说明
 
         if (_connected)
         {
             return;
         }
 
-        showConnectEdit();
+        showConnectButton();
 
         if (GUI.Button(new Rect(Screen.width / 2 - 75, Screen.height - 60, 150, 30), "Connect Again"))
         {
@@ -219,32 +222,9 @@ public class WSClient : MonoBehaviour
         }
     }
 
-    void showText()
-    {
-        if (!"".Equals(_cmd))
-        {
-
-
-            GUI.Label(new Rect(Screen.width / 2 - 240, Screen.height - 100, 480, 50), " ", guiStyle);
-        }
-    }
-
-    void showConnectEdit()
+    void showConnectButton()
     {
         //获取输入框输入的内容  
         ip = GUI.TextField(new Rect(Screen.width / 2 - 75, Screen.height - 100, 150, 30), ip, 15);
     }
-
-	void showOptionText()
-    {
-
-        Rect rect = new Rect(Screen.width - 170, Screen.height - 100, 150, 70);
-
-        GUI.Box(rect, "", "button");
-        GUI.Label(new Rect(Screen.width - 160, Screen.height - 90, 150, 30), "显示日志 :X");
-        GUI.Label(new Rect(Screen.width - 160, Screen.height - 60, 150, 30), "关闭声音 :L");
-
-    }
-
-     
 }
