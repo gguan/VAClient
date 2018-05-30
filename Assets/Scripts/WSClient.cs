@@ -23,7 +23,7 @@ public class WSClient : MonoBehaviour
     [Serializable]
     public class ResponseData
     {
-        public int type;
+		public string type;
         public string message;
         public JSONObject data;
     }
@@ -53,8 +53,9 @@ public class WSClient : MonoBehaviour
     public WebSocket ws;
     private FSMSystem fSM;
 
-    private string ip = "127.0.0.1";
-
+    //private string ip = "127.0.0.1";
+	private string ip = "192.168.31.10";
+	private int port = 9000;
     private bool _connected = false;
 
     bool _onCmd = false;
@@ -65,9 +66,6 @@ public class WSClient : MonoBehaviour
     const string SecretKey = "e7766ab06a495cf0ddba6598efb376af";
     public Tts _asr;
 
-    public AudioSource _audioSource;
-    public Animator _animator;
-    public AnimationClip[] _animClips;
 
     GUIStyle guiStyle = new GUIStyle();
 
@@ -96,7 +94,6 @@ public class WSClient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
         FSMSystem.Instance().CurrentState.Act(gameObject, gameObject);
         while (ExecuteOnMainThread.Count > 0)
         {
@@ -112,46 +109,56 @@ public class WSClient : MonoBehaviour
 
             ExecuteOnMainThread.Enqueue(() =>
             {
-                switch (reqData.type)
+				if (fSM.CurrentStateID == StateID.SleepStateId && reqData.type != "awake")
+				{
+					var response = new ResponseData();
+					response.message = "can not do " + reqData.type + " when unity sleep";
+					response.type = "sleep";
+					ws.Send(JsonUtility.ToJson(response));
+					return;
+				}
+				else if ("server_state".Equals(reqData.type))
                 {
-                    case "weather":
-                        fSM.PerformTransition(PersonState.ShowWeather);
-                        break;
-                    case "horoscope":
-                        fSM.PerformTransition(PersonState.ShowConstellation);
-                        break;
-                    case "awake":
-                        fSM.PerformTransition(PersonState.Awake);
-                        break;
-                    case "chat":
-                        fSM.PerformTransition(PersonState.Chat);
-                        break;
-                    case "music":
-                        fSM.PerformTransition(PersonState.Music);
-                        break;
-                    case "stop":
-                        fSM.PerformTransition(PersonState.Stop);
-                        break;
-                    case "sleep":
-                        fSM.PerformTransition(PersonState.Sleep);
-                        break;
-                    case "server_state":
-                        RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
-                        if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
-                        {
-                            ControlAnim.Instance().ShowMicrophone();
-                        }
-                        else
-                        {
-                            ControlAnim.Instance().DismissMicrophone();
-                        }
-                        break;
-                    case "stt":
-                        RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
-                        ControlAnim.Instance().ShowTips(mStt.data.text);
-                        break;
-                }
-                fSM.CurrentState.Reason(gameObject, data);
+					RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
+                    if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
+                    {
+                        ControlAnim.Instance().ShowMicrophone();
+                    }
+                    else
+                    {
+                        ControlAnim.Instance().DismissMicrophone();
+                    }
+				}else if("stt".Equals(reqData.type)){
+					RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
+                    ControlAnim.Instance().ShowTips(mStt.data.text);
+				}else
+				{
+					switch (reqData.type)
+					{
+						case "weather":
+							fSM.PerformTransition(PersonState.ShowWeather);
+							break;
+						case "horoscope":
+							fSM.PerformTransition(PersonState.ShowConstellation);
+							break;
+						case "awake":
+							fSM.PerformTransition(PersonState.Awake);
+							break;
+						case "chat":
+							fSM.PerformTransition(PersonState.Chat);
+							break;
+						case "music":
+							fSM.PerformTransition(PersonState.Music);
+							break;
+						case "stop":
+							fSM.PerformTransition(PersonState.Stop);
+							break;
+						case "sleep":
+							fSM.PerformTransition(PersonState.Sleep);
+							break;
+					}
+					fSM.CurrentState.Reason(gameObject, data);
+				}
             });
 
         }
@@ -160,7 +167,7 @@ public class WSClient : MonoBehaviour
             Debug.LogError(e.Message);
             var response = new ResponseData();
             response.message = e.Message;
-            response.type = 0;
+            response.type = "error";
             ws.Send(JsonUtility.ToJson(response));
         }
     }
@@ -168,7 +175,7 @@ public class WSClient : MonoBehaviour
 
     void SetupServer()
     {
-        ws = new WebSocket("ws://" + ip + ":9000");
+        ws = new WebSocket("ws://" + ip + ":"+ port);
 
         ws.OnOpen += (sender, e) =>
         {

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PersonShowConstellationState : PersonChatState {
+public class PersonShowConstellationState : PersonPlayingState {
+
 
 	public PersonShowConstellationState()
     {
@@ -17,6 +18,7 @@ public class PersonShowConstellationState : PersonChatState {
 	public override void Reason(GameObject gameObject, string data)
     {
 		base.Reason(gameObject, data);
+
     }
 
     public override void DoBeforeEntering()

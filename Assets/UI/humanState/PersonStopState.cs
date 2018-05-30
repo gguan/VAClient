@@ -20,7 +20,7 @@ public class PersonStopState : PersonChatState {
 
     public override void DoBeforeEntering()
     {
-        base.DoBeforeEntering();
+		FeedBackState("state", "stop");
     }
 
     public override void DoBeforeLeaving()

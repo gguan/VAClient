@@ -103,7 +103,9 @@ public abstract class FSMState{
     /// It is called automatically by the FSMSystem class before assigning it
     /// to the current state.
     /// </summary>
-    public virtual void DoBeforeEntering() { }
+    public virtual void DoBeforeEntering() {
+		Debug.Log("进入状态-----》"+stateId.ToString());
+	}
 
     /// <summary>
     /// This method is used to make anything necessary, as reseting variables
@@ -168,34 +170,37 @@ public class FSMSystem
 					personIdleState.AddPersonState(PersonState.ShowConstellation, StateID.ShowConstellationStateId);
 					personIdleState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 					personIdleState.AddPersonState(PersonState.Chat, StateID.ChatStateId);
+					personIdleState.AddPersonState(PersonState.Awake, StateID.AwakeStateId);
 
                     PersonStopState personStopState = new PersonStopState();
 					personStopState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
 
-
                     
-                    PersonMusicState personPlaySate = new PersonMusicState();
-					personPlaySate.AddPersonState(PersonState.Stop, StateID.StopStateId);
-					personPlaySate.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+                    PersonMusicState personMusicSate = new PersonMusicState();
+					personMusicSate.AddPersonState(PersonState.Stop, StateID.StopStateId);
+					personMusicSate.AddPersonState(PersonState.Idle, StateID.IdleStateId);
 
 
                     PersonShowWeatherState showWeatherState = new PersonShowWeatherState();
                     showWeatherState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+					showWeatherState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 
                     PersonShowConstellationState showConstellationState = new PersonShowConstellationState();
                     showConstellationState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+					showConstellationState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 
 					PersonAwakeState awakeState = new PersonAwakeState();
 					awakeState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
 
 					PersonChatState chatState = new PersonChatState();
 					chatState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+					chatState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 
 					_instance.AddState(personSleep);
 					_instance.AddState(awakeState);
 					_instance.AddState(personIdleState);
 					_instance.AddState(personStopState);
-					_instance.AddState(personPlaySate);
+					_instance.AddState(personMusicSate);
 					_instance.AddState(showWeatherState);
 					_instance.AddState(showConstellationState);
 					_instance.AddState(chatState);

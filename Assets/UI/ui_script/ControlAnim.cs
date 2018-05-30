@@ -68,7 +68,7 @@ public class ControlAnim
 	}
 
 
-	internal void ShowActionWindow(WSClient.ActionData<SimpleJSON.JSONObject> action)
+	internal void ShowActionWindow(WSClient.RequestData<SimpleJSON.JSONObject> action)
 	{
 		ShowTips(action.message);
 		FindAnimtor("SD_unitychan_humanoid").CrossFade("StandHand", 0.2f);
@@ -103,9 +103,9 @@ public class ControlAnim
 		AnimatorStateInfo stateInfo = weatherAnimtor.GetCurrentAnimatorStateInfo(0);
 		TestLog.Log("shortNameHash ---" + stateInfo.shortNameHash);
          
-			weatherAnimtor.SetTrigger(showWindow);
+	    weatherAnimtor.SetTrigger(showWindow);
 			//weatherAnimtor.CrossFade("弹窗动画", 0.2f);
-			Dismiss6();
+		 Dismiss6();
          
 	}
 
@@ -193,7 +193,7 @@ public class ControlAnim
 
 	public class TestLog{
 
-		private static Boolean isTest = true;
+		private static Boolean isTest = false;
 		public static void Log(string log){
 			if(isTest){
 				Debug.Log("ControlAnim.cs--"+log);

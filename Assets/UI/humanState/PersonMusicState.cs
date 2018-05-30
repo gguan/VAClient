@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PersonMusicState : PersonChatState {
+public class PersonMusicState : PersonPlayingState {
 
 	private bool isPlaying = false;
 	private bool isStartMusic = false;
-	private WSClient wSClient;
+	String musicUrl = "http://www.llss.bz/mp3/onj001.mp3";
+
     public PersonMusicState()
     {
 		isStartMusic = false;
@@ -18,7 +19,7 @@ public class PersonMusicState : PersonChatState {
     {
 		wSClient = gameObject.GetComponent<WSClient>();
 		base.Act(gameObject,npc);
-		if (isStartMusic && !wSClient._audioSource.isPlaying)
+		if (isStartMusic && ! _audioSource.isPlaying)
         {
             isStartMusic = false;
             Debug.Log("结束唱歌");
@@ -28,7 +29,6 @@ public class PersonMusicState : PersonChatState {
 
 	public override void Reason(GameObject gameObject, string data)
     {
-		wSClient = gameObject.GetComponent<WSClient>();
 		base.Reason(gameObject,data);
     }
 
@@ -45,17 +45,20 @@ public class PersonMusicState : PersonChatState {
 
     IEnumerator loadMusic(AudioSource _audioSource)
     {
-		String musicUrl = "http://www.llss.bz/mp3/onj001.mp3";
 		try{
 			if (wSClient != null && actionData != null)
 			{
-				WSClient.ActionData < WSClient.MusicData> musicActionData = JsonUtility.FromJson<WSClient.ActionData<WSClient.MusicData>>(actionData);
-				musicUrl =	musicActionData.data.url;
+				WSClient.RequestData <WSClient.MusicData> musicActionData = JsonUtility.FromJson<WSClient.RequestData<WSClient.MusicData>>(actionData);
+				if ("music".Equals(musicActionData.type)){
+					musicUrl = musicActionData.data.url;
+				}
+			
 			}
 		}catch (Exception ex){
 			isStartMusic = false;
 			Debug.LogError(ex.Message);
 		}
+		Debug.Log("mp3url="+ actionData +"---" + musicUrl);
 		WWW music = new WWW(musicUrl);
 		yield return music;
 		try{
@@ -71,7 +74,7 @@ public class PersonMusicState : PersonChatState {
 
     }
 
-	public override void AfterVoiceEnd()
+	protected override void AfterVoiceEnd()
     {
 		if (!isStartMusic && wSClient!=null)
         {
@@ -79,7 +82,7 @@ public class PersonMusicState : PersonChatState {
             // 语音说完  播放mp3
             isStartMusic = true;
             WSClient.ExecuteOnMainThread.Enqueue(() => {
-				wSClient.StartCoroutine(loadMusic(wSClient._audioSource));
+				wSClient.StartCoroutine(loadMusic(_audioSource));
             });
         }
     }

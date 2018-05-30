@@ -22,7 +22,7 @@ public class PersonIdleState : PersonChatState
 
     public override void DoBeforeEntering()
     {
-        base.DoBeforeEntering();
+		FeedBackState("state", "idle");
     }
 
     public override void DoBeforeLeaving()

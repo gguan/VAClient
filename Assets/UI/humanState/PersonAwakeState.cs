@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PersonAwakeState : PersonChatState {
+public class PersonAwakeState : PersonPlayingState {
 
 	public PersonAwakeState()
     {
