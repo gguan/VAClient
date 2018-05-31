@@ -68,7 +68,7 @@ public class ControlAnim
 	}
 
 
-	internal void ShowActionWindow(WSClient.RequestData<SimpleJSON.JSONObject> action)
+    internal void ShowActionWindow(VirtualAssistant.RequestData<SimpleJSON.JSONObject> action)
 	{
 		ShowTips(action.message);
 		FindAnimtor("SD_unitychan_humanoid").CrossFade("StandHand", 0.2f);
