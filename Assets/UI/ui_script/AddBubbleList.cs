@@ -15,18 +15,9 @@ public class AddBubbleList : MonoBehaviour {
 		bubbleGameObject = (GameObject)Resources.Load("Prefabs/Bubble");
         print(bubbleGameObject);
         Invoke("createBubble", 2.0f);
-        //StartCoroutine(Timer());
     }
 
-    IEnumerator Timer()
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(2.0f);
-            createBubble();
-        }
-    }
-
+      
     private void createBubble()
     {
         oldGameObjects = new GameObject[texts.Length];
