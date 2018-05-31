@@ -10,12 +10,13 @@ using VirtualAssistant;
 public class WSClient : MonoBehaviour
 {
 
-    public WebSocket ws;
-    private FSMSystem fsm;
-
     private string ip = "127.0.0.1";
     private int port = 9000;
-    private bool _connected = false;
+    private bool connected = false;
+
+    public WebSocket ws;
+
+    private FSMSystem fsm;
 
     // Action queue pushed from websocket client
     public readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
@@ -38,7 +39,6 @@ public class WSClient : MonoBehaviour
 
         MakeFSM();
     }
-
 
     private void MakeFSM()
     {
@@ -82,10 +82,13 @@ public class WSClient : MonoBehaviour
                     {
                         ControlAnim.Instance().DismissMicrophone();
                     }
-				}else if("stt".Equals(reqData.type)){
+				}
+                else if("stt".Equals(reqData.type))
+                {
 					RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
                     ControlAnim.Instance().ShowTips(mStt.data.text);
-				}else
+				}
+                else
 				{
 					switch (reqData.type)
 					{
@@ -133,8 +136,8 @@ public class WSClient : MonoBehaviour
 
         ws.OnOpen += (sender, e) =>
         {
-            _connected = true;
-            Debug.Log("Opended");
+            connected = true;
+            Debug.Log("Websocket connected");
         };
 
         ws.OnMessage += (sender, e) =>
@@ -145,21 +148,19 @@ public class WSClient : MonoBehaviour
 
         ws.OnClose += (sender, e) =>
         {
-            _connected = false;
+            connected = false;
+            Debug.Log("Websocket closed");
         };
 
         try
         {
-            Debug.Log("连接websocket...");
+            Debug.Log("Connect websocket server...");
             ws.Connect();
         }
         catch (Exception ex)
         {
-            Debug.LogError("连接websocket失败: " + ex.Message);
+            Debug.LogError("Websocket failed: " + ex.Message);
         }
-
-        Debug.Log("连接结果: " + _connected);
-
     }
 
     void OnApplicationQuit()
@@ -170,7 +171,7 @@ public class WSClient : MonoBehaviour
     void OnGUI()
     {
 
-        if (_connected)
+        if (connected)
         {
             return;
         }
