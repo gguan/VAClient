@@ -57,76 +57,94 @@ public class WSClient : MonoBehaviour
 
     void ProcessRequest(string data)
     {
-        try
-        {
-            RequestData<JSONObject> reqData = JsonUtility.FromJson<RequestData<JSONObject>>(data);
-
             ExecuteOnMainThread.Enqueue(() =>
             {
-				if (fsm.CurrentStateID == StateID.SleepStateId && reqData.type != "awake")
-				{
-					var response = new ResponseData();
-					response.message = "can not do " + reqData.type + " when unity sleep";
-					response.type = "sleep";
-					ws.Send(JsonUtility.ToJson(response));
-					return;
-				}
-				else if ("server_state".Equals(reqData.type))
-                {
-					RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
-                    if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
+
+             
+			var reqType = JSON.Parse(data)["type"].Value;
+			var jSONArray =JSON.Parse(data)["options"].AsArray;
+
+			string[] options = new string[jSONArray.Count];
+			for (int i = 0; i < jSONArray.Count;i++){
+				options[i] = jSONArray[i].Value;
+			}
+		  
+            {        // 该代码 不属于任何 状态 有就执行
+                GameObject gameUI = GameObject.Find("ui");
+                AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
+			    if(add!=null){
+				if (options != null && options.Length > 0)
                     {
-                        ControlAnim.Instance().ShowMicrophone();
+                        add.createNewBubble( options);
                     }
                     else
                     {
-                        ControlAnim.Instance().DismissMicrophone();
+                        add.createNewBubble(new string[0] { });
                     }
-				}
-                else if("stt".Equals(reqData.type))
-                {
-					RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
-                    ControlAnim.Instance().ShowTips(mStt.data.text);
-				}
-                else
-				{
-					switch (reqData.type)
-					{
-						case "weather":
-							fsm.PerformTransition(PersonState.ShowWeather);
-							break;
-						case "horoscope":
-							fsm.PerformTransition(PersonState.ShowConstellation);
-							break;
-						case "awake":
-							fsm.PerformTransition(PersonState.Awake);
-							break;
-						case "chat":
-							fsm.PerformTransition(PersonState.Chat);
-							break;
-						case "music":
-							fsm.PerformTransition(PersonState.Music);
-							break;
-						case "stop":
-							fsm.PerformTransition(PersonState.Stop);
-							break;
-						case "sleep":
-							fsm.PerformTransition(PersonState.Sleep);
-							break;
-					}
-					fsm.CurrentState.Reason(gameObject, data);
-				}
-            });
+			    }
+            }
 
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e.Message);
-            var response = new ResponseData();
-            response.message = e.Message;
-            response.type = "error";
-            ws.Send(JsonUtility.ToJson(response));
-        }
+                //如果当前状态 是Sleep的话 只能接受awake 状态
+			if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId &&  reqType != "awake")
+            {
+                var response = new ResponseData();
+				response.message = "can not do " + reqType + " when unity sleep";
+                response.type = "sleep";
+                ws.Send(JsonUtility.ToJson(response));
+                return;
+            }
+			else if ("server_state".Equals(reqType)) // microphone 控制指令
+            {
+                RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
+                if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
+                {
+                    ControlAnim.Instance().ShowMicrophone();
+                }
+                else
+                {
+                    ControlAnim.Instance().DismissMicrophone();
+                }
+            }
+			else if ("stt".Equals(reqType)) // 人说的话
+            {
+                RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
+                ControlAnim.Instance().ShowTips(mStt.data.text);
+            }
+            else //状态改变
+            {
+				switch (reqType)
+                {
+                    case "weather":
+                        FSMSystem.Instance().PerformTransition(PersonState.ShowWeather, data);
+                        break;
+                    case "horoscope":
+                        FSMSystem.Instance().PerformTransition(PersonState.ShowConstellation, data);
+                        break;
+                    case "awake":
+                        FSMSystem.Instance().PerformTransition(PersonState.Awake, data);
+                        break;
+                    case "chat":
+                        FSMSystem.Instance().PerformTransition(PersonState.Chat, data);
+                        break;
+                    case "music":
+                        FSMSystem.Instance().PerformTransition(PersonState.Music, data);
+                        break;
+                    case "stop":
+                        FSMSystem.Instance().PerformTransition(PersonState.Stop, data);
+                        break;
+                    case "sleep":
+                        FSMSystem.Instance().PerformTransition(PersonState.Sleep, data);
+                        break;
+                    default:
+                        FSMSystem.Instance().PerformTransition(PersonState.Idle, data);
+					    var response = new ResponseData();
+					    response.message = "can not parse state";
+						response.type = "error";
+                        ws.Send(JsonUtility.ToJson(response));
+                        break;
+                }
+            }
+        });
     }
 
 

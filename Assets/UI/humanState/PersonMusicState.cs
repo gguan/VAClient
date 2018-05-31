@@ -18,13 +18,13 @@ public class PersonMusicState : PersonPlayingState {
 
 	public override void Act(GameObject gameObject, GameObject npc)
     {
-		wSClient = gameObject.GetComponent<WSClient>();
+		client = gameObject.GetComponent<WSClient>();
 		base.Act(gameObject,npc);
 		if (isStartMusic && ! _audioSource.isPlaying)
         {
             isStartMusic = false;
             Debug.Log("结束唱歌");
-            FSMSystem.Instance().PerformTransition(PersonState.Idle);
+            FSMSystem.Instance().PerformTransition(PersonState.Idle, "idle");
         }
     }
 
@@ -47,9 +47,9 @@ public class PersonMusicState : PersonPlayingState {
     IEnumerator loadMusic()
     {
 		try{
-			if (wSClient != null && actionData != null)
+			if (client != null && data != null)
 			{
-				 RequestData < MusicData> musicActionData = JsonUtility.FromJson<RequestData< MusicData>>(actionData);
+				RequestData < MusicData> musicActionData = JsonUtility.FromJson<RequestData< MusicData>>(data);
 				if ("music".Equals(musicActionData.type)){
 					musicUrl = musicActionData.data.url;
 				}
@@ -59,7 +59,7 @@ public class PersonMusicState : PersonPlayingState {
 			isStartMusic = false;
 			Debug.LogError(ex.Message);
 		}
-		Debug.Log("mp3url="+ actionData +"---" + musicUrl);
+		Debug.Log("mp3url="+ data +"---" + musicUrl);
 		WWW music = new WWW(musicUrl);
 		yield return music;
 		try{
@@ -78,12 +78,12 @@ public class PersonMusicState : PersonPlayingState {
 
 	protected override void AfterVoiceEnd()
     {
-		if (!isStartMusic && wSClient!=null)
+		if (!isStartMusic && client!=null)
         {
             Debug.Log("开始唱歌");
             // 语音说完  播放mp3
             
-			wSClient.StartCoroutine(loadMusic());
+			client.StartCoroutine(loadMusic());
         }
     }
 }

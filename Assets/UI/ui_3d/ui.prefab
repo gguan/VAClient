@@ -427,7 +427,6 @@ GameObject:
   - component: {fileID: 223385288373504308}
   - component: {fileID: 114719128806546668}
   - component: {fileID: 114844655409915230}
-  - component: {fileID: 114891267944129462}
   m_Layer: 5
   m_Name: ui
   m_TagString: Untagged
@@ -1714,22 +1713,6 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: "\u5951\u5408\u661F\u5EA7\uFF1A\u53CC\u5B50\u5EA7"
---- !u!114 &114891267944129462
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1747969448071696}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67b92c7a9e3804fb39af9acf06c5c08f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  texts:
-  - "\u6700\u8FD1\u6709\u4EC0\u4E48\u597D\u770B\u7684\u7535\u5F71?"
-  - "\u4ECA\u5929\u7684\u661F\u5EA7\u8FD0\u52BF"
-  - "\u6700\u8FD1\u6D41\u884C\u4EC0\u4E48\u7F8E\u98DF?"
-  - "\u7ED9\u6211\u63A8\u8350\u4E00\u6B3E\u6E38\u620F?"
 --- !u!114 &114914028270054472
 MonoBehaviour:
   m_ObjectHideFlags: 1

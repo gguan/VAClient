@@ -39,11 +39,16 @@ public class PersonShowWeatherState : PersonPlayingState
 		WeatherEdit weather=weatherGameObject.GetComponent<WeatherEdit>();
         
 		try{
-			RequestData<WeatherData> weatherData = JsonUtility.FromJson< RequestData<WeatherData>>(actionData);
+			WeatherData weatherData = JsonUtility.FromJson< RequestData<WeatherData>>(data).data;
             System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1)); // 当地时区
-			DateTime dt = startTime.AddMilliseconds(weatherData.data.dt);
+			DateTime dt = startTime.AddMilliseconds(weatherData.dt);
 
 			weather.time = dt.ToString("yyyy年MM月dd日 HH:mm:ss");
+			weather.wind_direction = "风速" + weatherData.wind.speed + "米/秒";
+			weather.temperature = weatherData.main.temp_min +"~"+weatherData.main.temp_max +"°C";
+			weather.weather = weatherData.weather[0].description;
+			weather.air_quality = weatherData.weather[0].main;
+            
 			//weather.wind_direction = weatherData.data.wind.deg;
 
 		}catch(Exception e)

@@ -5,25 +5,25 @@ using SimpleJSON;
 using UnityEngine;
 using VirtualAssistant;
 
+
 public class PersonChatState :FSMState {
 
     protected bool _startPlaying;
-    protected string actionData;
-	protected WSClient wSClient;
 	protected AudioSource _audioSource;
 	protected Animator _animator;
+	protected WSClient client;
+
     public PersonChatState()
     {
         stateId = StateID.ChatStateId;
         _startPlaying = false;
 		_animator = GameObject.Find("SD_unitychan_humanoid").GetComponent<Animator>();
 		_audioSource = GameObject.Find("SD_unitychan_humanoid").GetComponent<AudioSource>();
+		client = GameObject.Find("Network").GetComponent<WSClient>();
     }
 
     public override void Act(GameObject gameObject, GameObject npc)
     {
-
-        WSClient wS = gameObject.GetComponent<WSClient>();
 
         if (_startPlaying)
         {
@@ -41,69 +41,65 @@ public class PersonChatState :FSMState {
         }
     }
 
+ 
     public override void Reason(GameObject gameObject, string data)
     {
-		wSClient = gameObject.GetComponent<WSClient>();
-        actionData = data;
-        try
+
+    }
+
+    // message 需要合成的message emotion表情 action 动作 
+	protected void SpeechSynthesis(string message,string emotion ,string action){
+		client.StartCoroutine(client.tts.Synthesis(message.Trim(), s =>
         {
-			RequestData<JSONObject> action = JsonUtility.FromJson<RequestData<JSONObject>>(data);
-
-			{
-                GameObject gameUI = GameObject.Find("ui");
-                AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
-                if (action.options != null && action.options.Length > 0)
-                {
-                    add.createNewBubble(action.options);
-                }
-                else
-                {
-                    add.createNewBubble(new string[0] { });
-                }
-            }
-
-            if (action.message != null && !action.message.Equals(""))
+            if (s.Success)
             {
-					wSClient.StartCoroutine(wSClient.tts.Synthesis(action.message.Trim(), s =>
-                    {
-
-                        if (s.Success)
-                        {
-
-							_audioSource.clip = s.clip;
-							_audioSource.Play();
-							_animator.SetLayerWeight(1, 1);
-                            //_animator.CrossFade("angry@sd_hmd", 0.1f);
-                            //_animator.CrossFade("Walking@loop", 0.2f);
-                            //_animator.SetBool("thinking_00", true);
-                            if (action.emotion != null)
-                            {
-								 _animator.CrossFade(action.emotion, 0.1f);
-                            }
-                            if (action.action != null)
-                            {
-								 _animator.CrossFade(action.action, 0.25f);
-                            }
-
-                            _startPlaying = true;
-							Debug.Log("合成成功，正在播放，共" +  _audioSource.clip.length + "s");
-
-                            DoAnimtor();
-                            ControlAnim.Instance().ShowTips(action.message);
-
-                        }
-                        else
-                        {
-							FeedBackError(s.err_msg,GetErrorStateType());
-                        }
-                    }));
+                _audioSource.clip = s.clip;
+                _audioSource.Play();
+                _animator.SetLayerWeight(1, 1);
+                //_animator.CrossFade("angry@sd_hmd", 0.1f);
+                //_animator.CrossFade("Walking@loop", 0.2f);
+                //_animator.SetBool("thinking_00", true);
+				if (emotion != null)
+                {
+					_animator.CrossFade(emotion, 0.1f);
                 }
+				if (action != null)
+                {
+					_animator.CrossFade(action, 0.25f);
+                }
+
+                _startPlaying = true;
+                Debug.Log("合成成功，正在播放，共" + _audioSource.clip.length + "s");
+
+                DoAnimtor(); // 执行ui 伴随动画
+				ControlAnim.Instance().ShowTips(message); // 显示顶端字幕
+
+            }
+            else
+            {
+                FeedBackError(s.err_msg, GetErrorStateType());
+            }
+        }));
+	}
+
+    // 已经进入该状态 处理数据
+	public override void HandleData(){
+		base.HandleData();
+		try
+        {
+			if(data!=null && !"".Equals(data) && !"idle".Equals(data)){
+				RequestData<JSONObject> action = JsonUtility.FromJson<RequestData<JSONObject>>(data);
+                if (action.message != null && !action.message.Equals(""))
+                {
+					SpeechSynthesis(action.message,action.emotion,action.action ); //合成语音并播放
+                }
+			}
         }
         catch (Exception e)
         {
-			FeedBackError(e.Message,GetErrorStateType());
+            FeedBackError(e.Message, GetErrorStateType());
         }
-    }
+	}
 
 	public virtual string GetErrorStateType(){
 		return "error";
@@ -127,7 +123,7 @@ public class PersonChatState :FSMState {
 
 	protected virtual void AfterVoiceEnd()
     {
-        FSMSystem.Instance().PerformTransition(PersonState.Idle);
+        FSMSystem.Instance().PerformTransition(PersonState.Idle, "idle");
     }
 
 	protected virtual void FeedBackError(string error,string errorType ){
@@ -135,12 +131,11 @@ public class PersonChatState :FSMState {
         var response = new  ResponseData();
 		response.message = error;
 		response.type = errorType;
-		wSClient.ws.Send(JsonUtility.ToJson(response));
+		client.ws.Send(JsonUtility.ToJson(response));
 	}
 
 	protected virtual void FeedBackState(string stateMessage, string stateType )
     {
-		
 		var response = new  ResponseData();
 		response.message = stateMessage;
 		response.type = stateType;

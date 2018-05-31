@@ -31,6 +31,7 @@ public enum StateID
 public abstract class FSMState{
 	protected Dictionary<PersonState, StateID> map = new Dictionary<PersonState, StateID>();
 	protected StateID stateId;
+	public string data;  
     
 	public StateID ID { get { return stateId; } }
     
@@ -113,6 +114,8 @@ public abstract class FSMState{
     /// by the FSMSystem before changing to a new state.
     /// </summary>
     public virtual void DoBeforeLeaving() { }
+
+	public virtual void HandleData() { }
 
     /// <summary>
     /// This method decides if the state should transition to another on its list
@@ -287,7 +290,7 @@ public class FSMSystem
     ///  doesn't have a target state for the transition passed, 
     /// an ERROR message is printed.
     /// </summary>
-	public void PerformTransition(PersonState personState )
+	public void PerformTransition(PersonState personState ,string actionData)
     {
         // Check for NullTransition before changing the current state
 		if (personState == PersonState.None)
@@ -316,7 +319,9 @@ public class FSMSystem
                 currentState.DoBeforeLeaving();
 
                 currentState = state;
+				currentState.data = actionData;
 
+				currentState.HandleData();
                 // Reset the state to its desired condition before it can reason or act
                 currentState.DoBeforeEntering();
                 break;

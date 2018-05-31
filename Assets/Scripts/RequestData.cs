@@ -53,7 +53,7 @@
         public class WeatherData
         {
             public Coord coord;
-            public Weather weather;
+            public Weather[] weather;
             //public string base;//TODO 
             public Main main;
             public long visibility;

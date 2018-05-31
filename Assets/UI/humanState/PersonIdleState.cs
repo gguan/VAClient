@@ -12,15 +12,20 @@ public class PersonIdleState : PersonChatState
 
 	public override void Act(GameObject gameObject, GameObject npc)
     {
-		base.Act(gameObject,npc);
+		
     }
 
 	public override void Reason(GameObject gameObject, string data)
     {
-		base.Reason(gameObject,data);
+		
     }
 
-    public override void DoBeforeEntering()
+	public override void HandleData()
+	{
+		base.HandleData();
+	}
+
+	public override void DoBeforeEntering()
     {
 		FeedBackState("state", "idle");
     }

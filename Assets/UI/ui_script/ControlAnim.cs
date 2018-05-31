@@ -26,6 +26,7 @@ public class ControlAnim
 
 	private Boolean isShowWeather = false;
 	private Boolean isShowConstellation = false;
+	private Boolean isShowMicrophone = false;
 
 	private Animator weatherAnimtor;
 	public static ControlAnim Instance()
@@ -67,23 +68,7 @@ public class ControlAnim
 		}
 	}
 
-
-    internal void ShowActionWindow(VirtualAssistant.RequestData<SimpleJSON.JSONObject> action)
-	{
-		ShowTips(action.message);
-		FindAnimtor("SD_unitychan_humanoid").CrossFade("StandHand", 0.2f);
-		TestLog.Log("action =" +action.type+",weather");
-		if("weather".Equals(action.type)){
-			isShowWeather = true;
-            ShowWeather();
-		}else if("constellation".Equals(action.type)){
-			isShowConstellation = true;
-            ShowConstellation();
-		}else if("chat".Equals(action.type)){
-			
-		}
-	}
-
+   
 
 	public void ShowTips(string info)
 	{
@@ -184,11 +169,25 @@ public class ControlAnim
 
 
 	public void ShowMicrophone(){
-		FindAnimtor("microphone").SetTrigger("show_microphone");
+		try{
+			if (!isShowMicrophone)
+            {
+                FindAnimtor("microphone").SetTrigger("show_microphone");
+            }
+		}catch(Exception ex){
+			Debug.LogError(ex.Message);
+		}
 	}
 
 	public void DismissMicrophone(){
-		FindAnimtor("microphone").SetTrigger("dismiss_microphone");
+		try{
+			if (isShowMicrophone)
+            {
+                FindAnimtor("microphone").SetTrigger("dismiss_microphone");
+            }
+		}catch (Exception ex){
+			Debug.LogError(ex.Message);
+		}
 	}
 
 	public class TestLog{
