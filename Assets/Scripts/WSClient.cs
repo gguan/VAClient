@@ -10,7 +10,8 @@ using VirtualAssistant;
 public class WSClient : MonoBehaviour
 {
 
-    private string ip = "127.0.0.1";
+    //private string ip = "127.0.0.1";
+	private string ip = "192.168.31.10";
     private int port = 9000;
     private bool connected = false;
 
