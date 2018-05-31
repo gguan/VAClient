@@ -19,6 +19,7 @@ public class ConstellationEdit : MonoBehaviour {
 	public string agreeConstellation ="双鱼座";
 	public string dateConstellation = "天平座\n9.23-10.23";
 	public string descriptionText= "今天不要出门!!!";
+	public int type =2;// 星座图标
 
 	GameObject titleGameObject;
 	GameObject loveLuckGameObject;
@@ -46,6 +47,7 @@ public class ConstellationEdit : MonoBehaviour {
 		iconOfConstellationGameObject = transform.Find("constellation_icon").gameObject;
 		dateOfConstellationGameObject = transform.Find("constellation_icon/constellation_date").gameObject;
 		descriptionTextOfConstellationGameObject = transform.Find("constellation_descirption_text").gameObject;
+        
 	}
 
 
@@ -54,24 +56,54 @@ public class ConstellationEdit : MonoBehaviour {
 	{
 		switch(count){
 			case 0:
-				return "0星";
+				return "star/0星";
 			case 1:
-				return "1星";
+				return "star/1星";
 			case 2:
-                return "2星";
+				return "star/2星";
 			case 3:
-                return "3星";
+				return "star/3星";
 			case 4:
-                return "4星";
+				return "star/4星";
 			case 5:
-                return "5星";
+				return "star/5星";
 		}
 		return "0星";
 	}
 
+	private string getIconPath(int index){
+		switch(index){
+			case 0:
+				return "constellation/0_白羊座";
+            case 1:
+				return "constellation/1_金牛座";
+            case 2:
+				return "constellation/2_双子座";
+            case 3:
+				return "constellation/3_巨蟹座";
+            case 4:
+				return "constellation/4_狮子座";
+            case 5:
+				return "constellation/5_处女座";
+            case 6:
+				return "constellation/6_天秤座";
+            case 7:
+				return "constellation/7_天蝎座";
+            case 8:
+				return "constellation/8_射手座";
+            case 9:
+				return "constellation/9_摩蝎座";
+            case 10:
+				return "constellation/10_水瓶座";
+			case 11:
+				return "constellation/11_双鱼座";
+		}
+		return "";
+	}
+
 	// Update is called once per frame
 	void Update () {
-
+		
 		setConstellationTitle(title);
 		setStar(loveLuckGameObject,loveLuckStar);
 		setStar (moneyLuckGameObject, moneyLuckStar);
@@ -85,6 +117,7 @@ public class ConstellationEdit : MonoBehaviour {
 
 		setConstellationDate(dateConstellation);
 		setConstellationDescriptionText(descriptionText);
+		setIcon(iconOfConstellationGameObject,type);
 	}
 
     //设置总运势星星
@@ -140,6 +173,12 @@ public class ConstellationEdit : MonoBehaviour {
 		RawImage rawImage = g.GetComponent<RawImage>();
 		rawImage.texture = Resources.Load(getStarPath(count)) as Texture;
 	}
+
+	private void setIcon(GameObject g, int index)
+    {
+        RawImage rawImage = g.GetComponent<RawImage>();
+		rawImage.texture = Resources.Load(getIconPath(index)) as Texture;
+    }
 
 	void prinComponents(GameObject game){
 		Component[] components = game.GetComponents<Component>();

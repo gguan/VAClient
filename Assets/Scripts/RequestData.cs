@@ -43,6 +43,20 @@
     }
 
 
+	[Serializable]
+	public class Constellation{
+		public string title;
+        public int loveLuckStar;
+        public int moneyLuckStar;
+        public int careerLuckStar;
+        public int totalLuckStar;
+        public int luckNumber ;
+        public string luckColor ;
+		public string starConstellation;
+        public string dateConstellation ;
+        public string descriptionText;
+		public int type;// 星座图标  horoscopes = ["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"]
+	}
 
 
 
