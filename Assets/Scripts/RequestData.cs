@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace VirtualAssistant
+ namespace VirtualAssistant
 {
     [Serializable]
     public class RequestData<T>

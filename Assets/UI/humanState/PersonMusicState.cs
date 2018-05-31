@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VirtualAssistant;
 
 public class PersonMusicState : PersonPlayingState {
 
@@ -48,7 +49,7 @@ public class PersonMusicState : PersonPlayingState {
 		try{
 			if (wSClient != null && actionData != null)
 			{
-				WSClient.RequestData <WSClient.MusicData> musicActionData = JsonUtility.FromJson<WSClient.RequestData<WSClient.MusicData>>(actionData);
+				 RequestData < MusicData> musicActionData = JsonUtility.FromJson<RequestData< MusicData>>(actionData);
 				if ("music".Equals(musicActionData.type)){
 					musicUrl = musicActionData.data.url;
 				}

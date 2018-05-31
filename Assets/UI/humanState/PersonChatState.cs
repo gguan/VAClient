@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 using UnityEngine;
+using VirtualAssistant;
 
 public class PersonChatState :FSMState {
 
@@ -46,7 +47,7 @@ public class PersonChatState :FSMState {
         actionData = data;
         try
         {
-			WSClient.RequestData<JSONObject> action = JsonUtility.FromJson<WSClient.RequestData<JSONObject>>(data);
+			RequestData<JSONObject> action = JsonUtility.FromJson<RequestData<JSONObject>>(data);
 
 			{
                 GameObject gameUI = GameObject.Find("ui");
@@ -131,7 +132,7 @@ public class PersonChatState :FSMState {
 
 	protected virtual void FeedBackError(string error,string errorType ){
 		Debug.LogError(error);
-        var response = new WSClient.ResponseData();
+        var response = new  ResponseData();
 		response.message = error;
 		response.type = errorType;
 		wSClient.ws.Send(JsonUtility.ToJson(response));
@@ -140,7 +141,7 @@ public class PersonChatState :FSMState {
 	protected virtual void FeedBackState(string stateMessage, string stateType )
     {
 		
-		var response = new WSClient.ResponseData();
+		var response = new  ResponseData();
 		response.message = stateMessage;
 		response.type = stateType;
 		GameObject.Find("Network").GetComponent<WSClient>().ws.Send(JsonUtility.ToJson(response));

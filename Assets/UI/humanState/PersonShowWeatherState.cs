@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using UnityEngine;
+using VirtualAssistant;
 
 public class PersonShowWeatherState : PersonPlayingState
 {
@@ -106,7 +104,7 @@ public class PersonShowWeatherState : PersonPlayingState
 		WeatherEdit weather=weatherGameObject.GetComponent<WeatherEdit>();
         
 		try{
-			WSClient.RequestData<WeatherData> weatherData = JsonUtility.FromJson<WSClient.RequestData<WeatherData>>(actionData);
+			 RequestData<WeatherData> weatherData = JsonUtility.FromJson< RequestData<WeatherData>>(actionData);
 			//weather.wind_direction = weatherData.data.wind.deg;
 
 		}catch(Exception e)
