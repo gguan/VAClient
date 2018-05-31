@@ -38,10 +38,10 @@ namespace Wit.BaiduAip.Speech
 
 		protected TokenFetchStatus tokenFetchStatus = TokenFetchStatus.NotFetched;
 
-		public Base (string apiKey, string secretKey)
+		public Base ()
 		{
-			APIKey = apiKey;
-			SecretKey = secretKey;
+            APIKey = "NgT1OZT4jTdTZizBgPvWkVnB";
+            SecretKey = "e7766ab06a495cf0ddba6598efb376af";
 		}
 
 		public IEnumerator GetAccessToken ()

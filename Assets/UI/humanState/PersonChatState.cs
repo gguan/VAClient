@@ -64,7 +64,7 @@ public class PersonChatState :FSMState {
 
             if (action.message != null && !action.message.Equals(""))
             {
-					wSClient.StartCoroutine(wSClient._asr.Synthesis(action.message.Trim(), s =>
+					wSClient.StartCoroutine(wSClient.tts.Synthesis(action.message.Trim(), s =>
                     {
 
                         if (s.Success)

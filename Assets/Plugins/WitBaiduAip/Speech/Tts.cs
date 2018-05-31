@@ -44,10 +44,6 @@ namespace Wit.BaiduAip.Speech
 
         private const string UrlTts = "http://tsn.baidu.com/text2audio";
 
-        public Tts(string apiKey, string secretKey) : base(apiKey, secretKey)
-        {
-        }
-
         public IEnumerator Synthesis(string text, Action<TtsResponse> callback, int speed = 5, int pit = 5, int vol = 5,
             Pronouncer per = Pronouncer.Female)
         {

@@ -24,10 +24,6 @@ namespace Wit.BaiduAip.Speech
     {
         private const string UrlAsr = "https://vop.baidu.com/server_api";
 
-        public Asr(string apiKey, string secretKey) : base(apiKey, secretKey)
-        {
-        }
-
         public IEnumerator Recognize(byte[] data, Action<AsrResponse> callback)
         {
 			yield return PreAction ();

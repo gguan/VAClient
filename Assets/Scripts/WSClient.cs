@@ -11,33 +11,27 @@ public class WSClient : MonoBehaviour
 {
 
     public WebSocket ws;
-    private FSMSystem fSM;
+    private FSMSystem fsm;
 
     private string ip = "127.0.0.1";
-	//private string ip = "192.168.31.10";
-	private int port = 9000;
+    private int port = 9000;
     private bool _connected = false;
 
-    bool _onCmd = false;
+    // Action queue pushed from websocket client
     public readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
 
-    // Baidu AIP
-    const string APIKey = "NgT1OZT4jTdTZizBgPvWkVnB";
-    const string SecretKey = "e7766ab06a495cf0ddba6598efb376af";
-    public Tts _asr;
-
+    // Baidu TTS
+    public Tts tts;
 
     GUIStyle guiStyle = new GUIStyle();
 
-    // Use this for initialization
     void Start()
     {
-
         SetupServer();
 
         // 初始化百度TTS
-        _asr = new Tts(APIKey, SecretKey);
-        StartCoroutine(_asr.GetAccessToken());
+        tts = new Tts();
+        StartCoroutine(tts.GetAccessToken());
 
         guiStyle.fontSize = 20;
         guiStyle.wordWrap = true;
@@ -48,7 +42,7 @@ public class WSClient : MonoBehaviour
 
     private void MakeFSM()
     {
-        fSM = FSMSystem.Instance();
+        fsm = FSMSystem.Instance();
     }
 
     // Update is called once per frame
@@ -69,7 +63,7 @@ public class WSClient : MonoBehaviour
 
             ExecuteOnMainThread.Enqueue(() =>
             {
-				if (fSM.CurrentStateID == StateID.SleepStateId && reqData.type != "awake")
+				if (fsm.CurrentStateID == StateID.SleepStateId && reqData.type != "awake")
 				{
 					var response = new ResponseData();
 					response.message = "can not do " + reqData.type + " when unity sleep";
@@ -96,28 +90,28 @@ public class WSClient : MonoBehaviour
 					switch (reqData.type)
 					{
 						case "weather":
-							fSM.PerformTransition(PersonState.ShowWeather);
+							fsm.PerformTransition(PersonState.ShowWeather);
 							break;
 						case "horoscope":
-							fSM.PerformTransition(PersonState.ShowConstellation);
+							fsm.PerformTransition(PersonState.ShowConstellation);
 							break;
 						case "awake":
-							fSM.PerformTransition(PersonState.Awake);
+							fsm.PerformTransition(PersonState.Awake);
 							break;
 						case "chat":
-							fSM.PerformTransition(PersonState.Chat);
+							fsm.PerformTransition(PersonState.Chat);
 							break;
 						case "music":
-							fSM.PerformTransition(PersonState.Music);
+							fsm.PerformTransition(PersonState.Music);
 							break;
 						case "stop":
-							fSM.PerformTransition(PersonState.Stop);
+							fsm.PerformTransition(PersonState.Stop);
 							break;
 						case "sleep":
-							fSM.PerformTransition(PersonState.Sleep);
+							fsm.PerformTransition(PersonState.Sleep);
 							break;
 					}
-					fSM.CurrentState.Reason(gameObject, data);
+					fsm.CurrentState.Reason(gameObject, data);
 				}
             });
 
