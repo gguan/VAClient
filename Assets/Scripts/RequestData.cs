@@ -53,85 +53,24 @@
         public int luckNumber ;
         public string luckColor ;
 		public string starConstellation;
-        public string dateConstellation ;
+        public string name ;
+		public string date;
         public string descriptionText;
 		public int type;// 星座图标  horoscopes = ["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"]
 	}
 
 
-
-	namespace Weather
-    {
-
-        [Serializable]
-        public class WeatherData
-        {
-            public Coord coord;
-            public Weather[] weather;
-            //public string base;//TODO 
-            public Main main;
-            public long visibility;
-            public Wind wind;
-            public Clouds clouds;
-            public long dt;
-            public Sys sys;
-            public long id;
-            public string name;
-            public int cod;
-        }
-
-        [Serializable]
-        public class Coord
-        {
-            public float lon;
-            public float lat;
-        }
-
-        [Serializable]
-        public class Weather
-        {
-
-            public long id;
-            public string main;
-            public string description;
-            public string icon;
-        }
-
-        [Serializable]
-        public class Main
-        {
-            public int temp;
-            public int pressure;
-            public int humidity;
-            public int temp_min;
-            public int temp_max;
-        }
-
-
-        [Serializable]
-        public class Wind
-        {
-            public int speed;
-            public int deg;
-        }
-
-        [Serializable]
-        public class Clouds
-        {
-            public int all;
-        }
-
-        [Serializable]
-        public class Sys
-        {
-            public int type;
-            public long id;
-            public float message;
-            public string country;
-            public long sunrise;
-            public long sunset;
-        }
-    }
+	[Serializable]
+	public class Weather{
+		public string time ;
+        public string temperature  ;
+        public string weather ;
+        public string wind_direction ;
+        public string air_quality  ;
+		public string weather_icon;
+		public string weather_bg;
+	}
+    
 }
 
 

@@ -15,11 +15,12 @@ public class ConstellationEdit : MonoBehaviour {
 	public int totalLuckStar=4;
 	public int luckNumber=5;
 	public string luckColor="绿色";
-	public string bewareConstellation= "白羊座";
-	public string agreeConstellation ="双鱼座";
-	public string dateConstellation = "天平座\n9.23-10.23";
+	public string starConstellation ="双鱼座";
+
 	public string descriptionText= "今天不要出门!!!";
 	public int type =2;// 星座图标
+	public string constellationDate;
+    public string constellationName;
 
 	GameObject titleGameObject;
 	GameObject loveLuckGameObject;
@@ -29,7 +30,7 @@ public class ConstellationEdit : MonoBehaviour {
 	GameObject luckNumberGameObject;
 	GameObject luckColorGameObject;
 	GameObject bewareConstellationGameObject;
-	GameObject agreeConstellationGameObject;
+	GameObject starConstellationGameObject;
 	GameObject iconOfConstellationGameObject;
 	GameObject dateOfConstellationGameObject;
 	GameObject descriptionTextOfConstellationGameObject;
@@ -42,11 +43,11 @@ public class ConstellationEdit : MonoBehaviour {
 		totalLuckGameObject = transform.Find("total_luck/star").gameObject;
 		luckNumberGameObject = transform.Find("luck_number").gameObject;
 		luckColorGameObject = transform.Find("luck_color").gameObject;
-		bewareConstellationGameObject = transform.Find("agree_constellation").gameObject;
-		agreeConstellationGameObject = transform.Find("beware_constellation").gameObject;
+         
+		starConstellationGameObject = transform.Find("agree_constellation").gameObject;
 		iconOfConstellationGameObject = transform.Find("constellation_icon").gameObject;
 		dateOfConstellationGameObject = transform.Find("constellation_icon/constellation_date").gameObject;
-		descriptionTextOfConstellationGameObject = transform.Find("constellation_descirption_text").gameObject;
+		descriptionTextOfConstellationGameObject = transform.Find("detailed_description/constellation_descirption_text").gameObject;
         
 	}
 
@@ -104,23 +105,28 @@ public class ConstellationEdit : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
-		setConstellationTitle(title);
-		setStar(loveLuckGameObject,loveLuckStar);
-		setStar (moneyLuckGameObject, moneyLuckStar);
-		setStar( careerLuckGameObject,careerLuckStar);
-		setStar(totalLuckGameObject, totalLuckStar);
 
-		setConstellationInfo(luckNumberGameObject, "幸运数字", luckNumber+"");
-		setConstellationInfo(luckColorGameObject,"幸运颜色",luckColor);
-		setConstellationInfo(bewareConstellationGameObject, "提防星座", bewareConstellation);
-		setConstellationInfo(agreeConstellationGameObject,"契合星座",agreeConstellation);
-
-		setConstellationDate(dateConstellation);
-		setConstellationDescriptionText(descriptionText);
-		setIcon(iconOfConstellationGameObject,type);
 	}
 
-    //设置总运势星星
+	private void OnGUI()
+	{
+		setConstellationTitle(title);
+        setStar(loveLuckGameObject, loveLuckStar);
+        setStar(moneyLuckGameObject, moneyLuckStar);
+        setStar(careerLuckGameObject, careerLuckStar);
+        setStar(totalLuckGameObject, totalLuckStar);
+
+        setConstellationInfo(luckNumberGameObject, "幸运数字", luckNumber + "");
+        setConstellationInfo(luckColorGameObject, "幸运颜色", luckColor);
+		setConstellationInfo(starConstellationGameObject, "幸运星座", starConstellation);
+
+
+		setConstellationDate(constellationName +"\n" +constellationDate);
+        setConstellationDescriptionText(descriptionText);
+        setIcon(iconOfConstellationGameObject, type);
+	}
+
+	//设置总运势星星
 	public void setTotalConstellationStar(int count){
 		totalLuckStar = count;
 		setStar(totalLuckGameObject,totalLuckStar);
@@ -159,7 +165,6 @@ public class ConstellationEdit : MonoBehaviour {
     // 设置星座日期
 	public void setConstellationDate( string text)
 	{
-		dateConstellation = text;
 		dateOfConstellationGameObject.GetComponent<Text>().text = text;
 	}
 

@@ -21,8 +21,8 @@ public class WeatherEdit : MonoBehaviour {
 	GameObject windDirectionGameObject;
 	GameObject airQualityGameObject;
 	void Start () {
-		weather_icon = Resources.Load("cloudy") as Texture;
-		weather_bg = Resources.Load("rainy_bg") as Texture;
+		weather_icon = Resources.Load("weather/cloudy") as Texture;
+		weather_bg = Resources.Load("weather/Rain") as Texture;
 
 		timeGameObject = transform.Find("time").gameObject;
 		weatherIconObject = transform.Find("weather_icon").gameObject;
@@ -31,17 +31,24 @@ public class WeatherEdit : MonoBehaviour {
 		windDirectionGameObject = transform.Find("wind_direction").gameObject;
 		airQualityGameObject = transform.Find("air_quality").gameObject;
 
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
+	
+	}
+
+	private void OnGUI()
+	{
 		timeGameObject.GetComponent<Text>().text = time;
+        weatherIconObject.GetComponent<RawImage>().texture = weather_icon;
+        temperatureGameObject.GetComponent<Text>().text = temperature;
+        weatherGameObject.GetComponent<Text>().text = weather;
+        windDirectionGameObject.GetComponent<Text>().text = wind_direction;
+        airQualityGameObject.GetComponent<Text>().text = air_quality;
+        gameObject.GetComponent<RawImage>().texture = weather_bg;
 		weatherIconObject.GetComponent<RawImage>().texture = weather_icon;
-		temperatureGameObject.GetComponent<Text>().text = temperature;
-		weatherGameObject.GetComponent<Text>().text = weather;
-		windDirectionGameObject.GetComponent<Text>().text = wind_direction;
-		airQualityGameObject.GetComponent<Text>().text = air_quality;
-		gameObject.GetComponent<RawImage>().texture = weather_bg;
 	}
 }

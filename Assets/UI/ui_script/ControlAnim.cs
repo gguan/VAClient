@@ -124,7 +124,7 @@ public class ControlAnim
 		Show6();
 	}
 
-	private void Dismiss6()
+	public void Dismiss6()
 	{
 		Animator animator = FindAnimtor("plane_of_rotation_front");
 		animator.SetTrigger(dismiss6);
@@ -137,7 +137,7 @@ public class ControlAnim
 	}
 
 
-	private void Show6()
+	public void Show6()
 	{
 		Animator animator = FindAnimtor("plane_of_rotation_front");
 		animator.SetTrigger(appear6);
@@ -170,10 +170,9 @@ public class ControlAnim
 
 	public void ShowMicrophone(){
 		try{
-			if (!isShowMicrophone)
-            {
+			 
                 FindAnimtor("microphone").SetTrigger("show_microphone");
-            }
+            
 		}catch(Exception ex){
 			Debug.LogError(ex.Message);
 		}
@@ -181,10 +180,9 @@ public class ControlAnim
 
 	public void DismissMicrophone(){
 		try{
-			if (isShowMicrophone)
-            {
+			 
                 FindAnimtor("microphone").SetTrigger("dismiss_microphone");
-            }
+            
 		}catch (Exception ex){
 			Debug.LogError(ex.Message);
 		}

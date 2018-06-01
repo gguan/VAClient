@@ -85,16 +85,7 @@ public class WSClient : MonoBehaviour
 			    }
             }
 
-                //如果当前状态 是Sleep的话 只能接受awake 状态
-			if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId &&  reqType != "awake")
-            {
-                var response = new ResponseData();
-				response.message = "can not do " + reqType + " when unity sleep";
-                response.type = "sleep";
-                ws.Send(JsonUtility.ToJson(response));
-                return;
-            }
-			else if ("server_state".Equals(reqType)) // microphone 控制指令
+			if ("server_state".Equals(reqType)) // microphone 控制指令
             {
                 RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
                 if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
@@ -106,47 +97,54 @@ public class WSClient : MonoBehaviour
                     ControlAnim.Instance().DismissMicrophone();
                 }
             }
-			else if ("stt".Equals(reqType)) // 人说的话
+            else if ("stt".Equals(reqType)) // 人说的话
             {
                 RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
                 ControlAnim.Instance().ShowTips(mStt.data.text);
-            }
-            else //状态改变
-            {
-				switch (reqType)
-                {
-                    case "weather":
-                        FSMSystem.Instance().PerformTransition(PersonState.ShowWeather, data);
-                        break;
-                    case "horoscope":
-                        FSMSystem.Instance().PerformTransition(PersonState.ShowConstellation, data);
-                        break;
-                    case "awake":
-                        FSMSystem.Instance().PerformTransition(PersonState.Awake, data);
-                        break;
-                    case "chat":
-                        FSMSystem.Instance().PerformTransition(PersonState.Chat, data);
-                        break;
-                    case "music":
-                        FSMSystem.Instance().PerformTransition(PersonState.Music, data);
-                        break;
-                    case "stop":
-                        FSMSystem.Instance().PerformTransition(PersonState.Stop, data);
-                        break;
-                    case "sleep":
-                        FSMSystem.Instance().PerformTransition(PersonState.Sleep, data);
-                        break;
-					case "dance":
-
-						break;
-                    default:
-                        FSMSystem.Instance().PerformTransition(PersonState.Idle, data);
-					    var response = new ResponseData();
-					    response.message = "can not parse state";
-						response.type = "error";
+            }else if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId &&  reqType != "awake")
+                    {
+                        var response = new ResponseData();
+            			response.message = "can not do " + reqType + " when unity sleep";
+                        response.type = "sleep";
                         ws.Send(JsonUtility.ToJson(response));
-                        break;
-                }
+                        return;
+                    }
+              else //状态改变
+                {
+        			switch (reqType)
+                    {
+                        case "weather":
+                            FSMSystem.Instance().PerformTransition(PersonState.ShowWeather, data);
+                            break;
+                        case "horoscope":
+                            FSMSystem.Instance().PerformTransition(PersonState.ShowConstellation, data);
+                            break;
+                        case "awake":
+                            FSMSystem.Instance().PerformTransition(PersonState.Awake, data);
+                            break;
+                        case "chat":
+                            FSMSystem.Instance().PerformTransition(PersonState.Chat, data);
+                            break;
+                        case "music":
+                            FSMSystem.Instance().PerformTransition(PersonState.Music, data);
+                            break;
+                        case "stop":
+                            FSMSystem.Instance().PerformTransition(PersonState.Stop, data);
+                            break;
+                        case "sleep":
+                            FSMSystem.Instance().PerformTransition(PersonState.Sleep, data);
+                            break;
+        				case "dance":
+        					FSMSystem.Instance().PerformTransition(PersonState.Dance, data);
+        					break;
+                        default:
+                            FSMSystem.Instance().PerformTransition(PersonState.Idle, data);
+        				    var response = new ResponseData();
+        				    response.message = "can not parse state";
+        					response.type = "error";
+                            ws.Send(JsonUtility.ToJson(response));
+                            break;
+                    }
             }
         });
     }

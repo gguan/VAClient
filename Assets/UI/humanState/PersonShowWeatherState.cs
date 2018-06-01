@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using VirtualAssistant;
-using VirtualAssistant.Weather;
 
 public class PersonShowWeatherState : PersonPlayingState
 {
@@ -39,21 +38,22 @@ public class PersonShowWeatherState : PersonPlayingState
 		WeatherEdit weather=weatherGameObject.GetComponent<WeatherEdit>();
         
 		try{
-			WeatherData weatherData = JsonUtility.FromJson< RequestData<WeatherData>>(data).data;
-            System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1)); // 当地时区
-			DateTime dt = startTime.AddMilliseconds(weatherData.dt);
+			Weather weatherData = JsonUtility.FromJson< RequestData<Weather>>(data).data;
 
-			weather.time = dt.ToString("yyyy年MM月dd日 HH:mm:ss");
-			weather.wind_direction = "风速" + weatherData.wind.speed + "米/秒";
-			weather.temperature = weatherData.main.temp_min +"~"+weatherData.main.temp_max +"°C";
-			weather.weather = weatherData.weather[0].description;
-			weather.air_quality = weatherData.weather[0].main;
-            
+			weather.time = weatherData.time;
+			weather.wind_direction = weatherData.wind_direction;
+			weather.temperature = weatherData.temperature;
+			weather.weather = weatherData.weather;
+			weather.air_quality = weatherData.air_quality;
+			string bgName = weatherData.weather_bg;
+			weather.weather_bg = Resources.Load("weather/bg/"+bgName) as Texture;
+			string iconName = weatherData.weather_icon;
+			weather.weather_icon = Resources.Load("weather/icon/"+ iconName) as Texture;
 			//weather.wind_direction = weatherData.data.wind.deg;
 
 		}catch(Exception e)
 		{
-			FeedBackError(e.Message,"error");
+			FeedBackError(e.Message,"parse weather error");
 		}
 
         ControlAnim.Instance().ShowWeather();

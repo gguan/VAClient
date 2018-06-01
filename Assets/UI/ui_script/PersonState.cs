@@ -12,7 +12,8 @@ public enum PersonState
 	ShowWeather,
 	Awake,
 	ShowConstellation,
-	Chat
+	Chat,
+	Dance
 }
 
 public enum StateID
@@ -25,7 +26,8 @@ public enum StateID
 	ShowWeatherStateId = 5,
 	ShowConstellationStateId = 6,
 	AwakeStateId,
-	ChatStateId
+	ChatStateId,
+	DanceStateId
 }
 
 public abstract class FSMState{
@@ -174,6 +176,7 @@ public class FSMSystem
 					personIdleState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 					personIdleState.AddPersonState(PersonState.Chat, StateID.ChatStateId);
 					personIdleState.AddPersonState(PersonState.Awake, StateID.AwakeStateId);
+					personIdleState.AddPersonState(PersonState.Dance, StateID.DanceStateId);
 
                     PersonStopState personStopState = new PersonStopState();
 					personStopState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
@@ -182,7 +185,13 @@ public class FSMSystem
                     PersonMusicState personMusicSate = new PersonMusicState();
 					personMusicSate.AddPersonState(PersonState.Stop, StateID.StopStateId);
 					personMusicSate.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+					personMusicSate.AddPersonState(PersonState.Awake, StateID.AwakeStateId);
 
+
+					PersonDanceState danceState = new PersonDanceState();
+					danceState.AddPersonState(PersonState.Awake, StateID.AwakeStateId);
+					danceState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
+					danceState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 
                     PersonShowWeatherState showWeatherState = new PersonShowWeatherState();
                     showWeatherState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
@@ -199,6 +208,8 @@ public class FSMSystem
 					chatState.AddPersonState(PersonState.Idle, StateID.IdleStateId);
 					chatState.AddPersonState(PersonState.Stop, StateID.StopStateId);
 
+
+
 					_instance.AddState(personSleep);
 					_instance.AddState(awakeState);
 					_instance.AddState(personIdleState);
@@ -207,6 +218,7 @@ public class FSMSystem
 					_instance.AddState(showWeatherState);
 					_instance.AddState(showConstellationState);
 					_instance.AddState(chatState);
+					_instance.AddState(danceState);
 
 
 }

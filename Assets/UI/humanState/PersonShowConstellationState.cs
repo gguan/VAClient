@@ -42,7 +42,7 @@ public class PersonShowConstellationState : PersonPlayingState {
         base.DoAnimtor();
 
 		//展示天气信息
-        GameObject constellationGameObject = GameObject.Find("ui/constellation_luck");
+        GameObject constellationGameObject = GameObject.Find("ui/constellations_luck");
 		if(constellationGameObject!=null){
 			ConstellationEdit constellationEdit = constellationGameObject.GetComponent<ConstellationEdit>();
 
@@ -56,14 +56,22 @@ public class PersonShowConstellationState : PersonPlayingState {
 				constellationEdit.totalLuckStar = constellation.totalLuckStar;
 				constellationEdit.title = constellation.title;
 				constellationEdit.type = constellation.type;
-
+				constellationEdit.luckNumber = constellation.luckNumber;
+				constellationEdit.luckColor = constellation.luckColor;
+				constellationEdit.starConstellation = constellation.starConstellation;
+				constellationEdit.constellationName = constellation.name;
+				constellationEdit.constellationDate = constellation.date;
+				constellationEdit.descriptionText = constellation.descriptionText;
+           
+				ControlAnim.Instance().ShowConstellation();
             }
             catch (Exception e)
             {
                 FeedBackError(e.Message, "error");
+				Debug.LogError(e.Message);
             }
 
-            ControlAnim.Instance().ShowConstellation();
+            
 		}
     }
 }
