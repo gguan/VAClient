@@ -22,7 +22,8 @@ public class PersonDanceState : PersonPlayingState {
 		base.Act(gameObject, npc);
 		if (isPlayDance && !_audioSource.isPlaying)
         {
-			AnimatorStateInfo animatorStateInfo =	_animator.GetCurrentAnimatorStateInfo(0);
+			AnimatorStateInfo animatorStateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
 			if ((animatorStateInfo.normalizedTime > 1.0f) && (animatorStateInfo.IsName(danceResId)) && !_danceAudioSource.isPlaying){  
 				isPlayDance = false;
                 Debug.Log("结束舞蹈");
@@ -51,6 +52,7 @@ public class PersonDanceState : PersonPlayingState {
 
         _animator.CrossFade("stand", 0.1f);
         _animator.CrossFade("default", 0.15f);
+		_danceAudioSource.Stop();
 		//GameObject.Find("SD_unitychan_humanoid").transform.position = new Vector3(0,0,0);
 		//GameObject.Find("SD_unitychan_humanoid").transform.localScale = new Vector3(1,1,1);
 		//GameObject.Find("SD_unitychan_humanoid").transform.rotation  =Quaternion.Euler(0, 180, 0);

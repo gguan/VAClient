@@ -42,13 +42,13 @@ public abstract class FSMState{
         // Check if anyone of the args is invalid
 		if (personState == PersonState.None)
         {
-            Debug.LogError("FSMState ERROR: NullTransition is not allowed for a real transition");
+			Debug.Log("FSMState ERROR: NullTransition is not allowed for a real transition");
             return;
         }
 
 		if (id == StateID.NoneStateId)
         {
-            Debug.LogError("FSMState ERROR: NullStateID is not allowed for a real ID");
+			Debug.Log("FSMState ERROR: NullStateID is not allowed for a real ID");
             return;
         }
 
@@ -56,7 +56,7 @@ public abstract class FSMState{
         //   check if the current transition was already inside the map
 		if (map.ContainsKey(personState))
         {
-			Debug.LogError("FSMState ERROR: State " + id.ToString() + " already has transition " + personState.ToString() +
+			Debug.Log("FSMState ERROR: State " + id.ToString() + " already has transition " + personState.ToString() +
                            "Impossible to assign to another state");
             return;
         }
@@ -73,7 +73,7 @@ public abstract class FSMState{
         // Check for NullTransition
 		if (personState == PersonState.None)
         {
-            Debug.LogError("FSMState ERROR: NullTransition is not allowed");
+			Debug.Log("FSMState ERROR: NullTransition is not allowed");
             return;
         }
 
@@ -83,7 +83,7 @@ public abstract class FSMState{
 			map.Remove(personState);
             return;
         }
-		Debug.LogError("FSMState ERROR: Transition " + personState.ToString() + " passed to " + stateId.ToString() +
+		Debug.Log("FSMState ERROR: Transition " + personState.ToString() + " passed to " + stateId.ToString() +
                        " was not on the state's transition list");
     }
 
@@ -244,7 +244,7 @@ public class FSMSystem
         // Check for Null reference before deleting
         if (s == null)
         {
-            Debug.LogError("FSM ERROR: Null reference is not allowed");
+			Debug.Log("FSM ERROR: Null reference is not allowed");
         }
 
         // First State inserted is also the Initial state,
@@ -262,7 +262,7 @@ public class FSMSystem
         {
             if (state.ID == s.ID)
             {
-                Debug.LogError("FSM ERROR: Impossible to add state " + s.ID.ToString() +
+				Debug.Log("FSM ERROR: Impossible to add state " + s.ID.ToString() +
                                " because state has already been added");
                 return;
             }
@@ -279,7 +279,7 @@ public class FSMSystem
         // Check for NullState before deleting
 		if (id == StateID.NoneStateId)
         {
-            Debug.LogError("FSM ERROR: NullStateID is not allowed for a real state");
+			Debug.Log("FSM ERROR: NullStateID is not allowed for a real state");
             return;
         }
 
@@ -292,7 +292,7 @@ public class FSMSystem
                 return;
             }
         }
-        Debug.LogError("FSM ERROR: Impossible to delete state " + id.ToString() +
+		Debug.Log("FSM ERROR: Impossible to delete state " + id.ToString() +
                        ". It was not on the list of states");
     }
 
@@ -307,7 +307,7 @@ public class FSMSystem
         // Check for NullTransition before changing the current state
 		if (personState == PersonState.None)
         {
-            Debug.LogError("FSM ERROR: NullTransition is not allowed for a real transition");
+			Debug.Log("FSM ERROR: NullTransition is not allowed for a real transition");
             return;
         }
 
@@ -316,7 +316,7 @@ public class FSMSystem
 		if (id == StateID.NoneStateId)
 
         {
-            Debug.LogError("FSM ERROR: State " + currentStateID.ToString() + " does not have a target state " +
+			Debug.Log("FSM ERROR: State " + currentStateID.ToString() + " does not have a target state " +
 			               " for transition " + personState.ToString());
             return;
         }

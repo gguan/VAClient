@@ -10,6 +10,7 @@ public class PersonChatState :FSMState {
 
     protected bool _startPlaying;
 	protected AudioSource _audioSource;
+     
 	protected Animator _animator;
 	protected WSClient client;
 
@@ -30,6 +31,7 @@ public class PersonChatState :FSMState {
             if (! _audioSource.isPlaying)
             {
                 _startPlaying = false;
+                
 				_animator.CrossFade("stand", 0.25f);
 				_animator.CrossFade("default", 0.15f);
                 //ws.Send(System.Text.Encoding.UTF8.GetBytes("Duration: " + _audioSource.clip.length + "s"));

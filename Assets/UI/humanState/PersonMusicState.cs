@@ -46,6 +46,9 @@ public class PersonMusicState : PersonPlayingState {
     public override void DoBeforeLeaving()
     {
         base.DoBeforeLeaving();
+
+		isStartMusic = false;
+		_musicAudioSource.Stop();
     }
 
     IEnumerator loadMusic()

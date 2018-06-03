@@ -13,7 +13,6 @@ using UnityEngine.UI;
 public class ControlAnim
 {
 
-
 	private int showWindow = Animator.StringToHash("show_weather");
 	private int dismissWindow = Animator.StringToHash("dismiss_weather");
 	private int dismiss6 = Animator.StringToHash("dismiss");
@@ -21,12 +20,16 @@ public class ControlAnim
 	private int suoxiao = Animator.StringToHash("suoxiao");
 	private int dismissConstellation = Animator.StringToHash("dismiss_constellation");
 	private int showConstellation = Animator.StringToHash("show_constellation");
+	private int dismissMicrophone = Animator.StringToHash("dismiss_microphone");
+	private int showMicrophone = Animator.StringToHash("show_microphone");
+
+
+
 	private static volatile ControlAnim _instance;
 	private static object _lock = new object();
 
 	private Boolean isShowWeather = false;
 	private Boolean isShowConstellation = false;
-	private Boolean isShowMicrophone = false;
 
 	private Animator weatherAnimtor;
 	public static ControlAnim Instance()
@@ -170,9 +173,10 @@ public class ControlAnim
 
 	public void ShowMicrophone(){
 		try{
-			 
-                FindAnimtor("microphone").SetTrigger("show_microphone");
-            
+			Animator microphoneAnimator = FindAnimtor("microphone");
+			if(checkAnimState(microphoneAnimator, "dismiss_microphone")  ||checkAnimState(microphoneAnimator, "microphone_state_dismiss") ){
+				microphoneAnimator.SetTrigger(showMicrophone);
+			}
 		}catch(Exception ex){
 			Debug.LogError(ex.Message);
 		}
@@ -180,11 +184,21 @@ public class ControlAnim
 
 	public void DismissMicrophone(){
 		try{
-			 
-                FindAnimtor("microphone").SetTrigger("dismiss_microphone");
-            
+			Animator microphoneAnimator= FindAnimtor("microphone");
+			if(checkAnimState(microphoneAnimator, "microphone_recod")){
+				microphoneAnimator.SetTrigger(dismissMicrophone);
+			}
 		}catch (Exception ex){
 			Debug.LogError(ex.Message);
+		}
+	}
+
+	public bool checkAnimState(Animator _animator,string animStrId){
+		AnimatorStateInfo animatorStateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+		if ((animatorStateInfo.normalizedTime > 1.0f) && (animatorStateInfo.IsName(animStrId))){
+			return true;
+		}  else {
+			return false;
 		}
 	}
 

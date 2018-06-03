@@ -10,147 +10,148 @@ using VirtualAssistant;
 public class WSClient : MonoBehaviour
 {
 
-    private string ip = "127.0.0.1";
+	private string ip = "127.0.0.1";
 	//private string ip = "192.168.31.10";
-    private int port = 9000;
-    private bool connected = false;
+	private int port = 9000;
+	private bool connected = false;
 
-    public WebSocket ws;
+	public WebSocket ws;
 
-    private FSMSystem fsm;
+	private FSMSystem fsm;
 
-    // Action queue pushed from websocket client
-    public readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
+	// Action queue pushed from websocket client
+	public readonly static Queue<Action> ExecuteOnMainThread = new Queue<Action>();
 
-    // Baidu TTS
-    public Tts tts;
+	// Baidu TTS
+	public Tts tts;
 
-    GUIStyle guiStyle = new GUIStyle();
+	GUIStyle guiStyle = new GUIStyle();
 
-    void Start()
-    {
-        SetupServer();
+	void Start()
+	{
+		SetupServer();
 
-        // 初始化百度TTS
-        tts = new Tts();
-        StartCoroutine(tts.GetAccessToken());
+		// 初始化百度TTS
+		tts = new Tts();
+		StartCoroutine(tts.GetAccessToken());
 
-        guiStyle.fontSize = 20;
-        guiStyle.wordWrap = true;
+		guiStyle.fontSize = 20;
+		guiStyle.wordWrap = true;
 
-        MakeFSM();
-    }
+		MakeFSM();
+	}
 
-    private void MakeFSM()
-    {
-        fsm = FSMSystem.Instance();
-    }
+	private void MakeFSM()
+	{
+		fsm = FSMSystem.Instance();
+	}
 
-    // Update is called once per frame
-    void Update()
-    {
-        FSMSystem.Instance().CurrentState.Act(gameObject, gameObject);
+	// Update is called once per frame
+	void Update()
+	{
+		FSMSystem.Instance().CurrentState.Act(gameObject, gameObject);
 
-        while (ExecuteOnMainThread.Count > 0)
-        {
-            ExecuteOnMainThread.Dequeue().Invoke();
-        }
-    }
+		while (ExecuteOnMainThread.Count > 0)
+		{
+			ExecuteOnMainThread.Dequeue().Invoke();
+		}
+	}
 
-    void ProcessRequest(string data)
-    {
-            ExecuteOnMainThread.Enqueue(() =>
-            {
+	void ProcessRequest(string data)
+	{
+		ExecuteOnMainThread.Enqueue(() =>
+		{
 
-             
+
 			var reqType = JSON.Parse(data)["type"].Value;
-			var jSONArray =JSON.Parse(data)["options"].AsArray;
 
-			string[] options = new string[jSONArray.Count];
-			for (int i = 0; i < jSONArray.Count;i++){
-				options[i] = jSONArray[i].Value;
-			}
-		  
-            {        // 该代码 不属于任何 状态 有就执行
-                GameObject gameUI = GameObject.Find("ui");
-                AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
-			    if(add!=null){
-				if (options != null && options.Length > 0)
-                    {
-                        add.createNewBubble( options);
-                    }
-                    else
-                    {
-                        add.createNewBubble(new string[0] { });
-                    }
-			    }
-            }
-
-			if ("server_state".Equals(reqType)) // microphone 控制指令
-            {
-                RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
+			checkOptions(data);
+            
+			if("server_state".Equals(reqType)){
+				RequestData<ServerStateData> mSerStateData = JsonUtility.FromJson<RequestData<ServerStateData>>(data);
                 if (ServerStateData.Order_Listening.Equals(mSerStateData.data.state))
                 {
                     ControlAnim.Instance().ShowMicrophone();
-                }
+				}
                 else
                 {
                     ControlAnim.Instance().DismissMicrophone();
                 }
-            }
-            else if ("stt".Equals(reqType)) // 人说的话
-            {
-                RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
+			}else if("stt".Equals(reqType)){
+				RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
                 ControlAnim.Instance().ShowTips(mStt.data.text);
-            }
-            else if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId &&  reqType != "awake")
-                    {
-                        var response = new ResponseData();
-            			response.message = "can not do " + reqType + " when unity sleep";
-                        response.type = "sleep";
-                        ws.Send(JsonUtility.ToJson(response));
-                        return;
-                    }
-              else //状态改变
-                {
-        			switch (reqType)
-                    {
-                        case "weather":
-                            FSMSystem.Instance().PerformTransition(PersonState.ShowWeather, data);
-                            break;
-                        case "horoscope":
-                            FSMSystem.Instance().PerformTransition(PersonState.ShowConstellation, data);
-                            break;
-                        case "awake":
-                            FSMSystem.Instance().PerformTransition(PersonState.Awake, data);
-                            break;
-                        case "chat":
-                            FSMSystem.Instance().PerformTransition(PersonState.Chat, data);
-                            break;
-                        case "music":
-                            FSMSystem.Instance().PerformTransition(PersonState.Music, data);
-                            break;
-                        case "stop":
-                            FSMSystem.Instance().PerformTransition(PersonState.Stop, data);
-                            break;
-                        case "sleep":
-                            FSMSystem.Instance().PerformTransition(PersonState.Sleep, data);
-                            break;
-        				case "dance":
-        					FSMSystem.Instance().PerformTransition(PersonState.Dance, data);
-        					break;
-                        default:
-                            FSMSystem.Instance().PerformTransition(PersonState.Idle, data);
-        				    var response = new ResponseData();
-        				    response.message = "can not parse state";
-        					response.type = "error";
-                            ws.Send(JsonUtility.ToJson(response));
-                            break;
-                    }
-            }
-        });
-    }
+			}else  if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId && reqType != "awake")
+			{
+				var response = new ResponseData();
+				response.message = "can not do " + reqType + " when unity sleep";
+				response.type = "sleep";
+				ws.Send(JsonUtility.ToJson(response));
+				return;
+			} else //状态改变
+				{
+				switch (reqType)
+				{
+					case "weather":
+						FSMSystem.Instance().PerformTransition(PersonState.ShowWeather, data);
+						break;
+					case "horoscope":
+						FSMSystem.Instance().PerformTransition(PersonState.ShowConstellation, data);
+						break;
+					case "awake":
+						FSMSystem.Instance().PerformTransition(PersonState.Awake, data);
+						break;
+					case "chat":
+						FSMSystem.Instance().PerformTransition(PersonState.Chat, data);
+						break;
+					case "music":
+						FSMSystem.Instance().PerformTransition(PersonState.Music, data);
+						break;
+					case "stop":
+						FSMSystem.Instance().PerformTransition(PersonState.Stop, data);
+						break;
+					case "sleep":
+						FSMSystem.Instance().PerformTransition(PersonState.Sleep, data);
+						break;
+					case "dance":
+						FSMSystem.Instance().PerformTransition(PersonState.Dance, data);
+						break;
+					
+					default:
+						FSMSystem.Instance().PerformTransition(PersonState.Idle, data);
+						var response = new ResponseData();
+						response.message = "can not parse state";
+						response.type = "error";
+						ws.Send(JsonUtility.ToJson(response));
+						break;
+				}
+			}
+		}); 
+	}
 
+	void checkOptions(string data){
+		var jSONArray = JSON.Parse(data)["options"].AsArray;
+        string[] options = new string[jSONArray.Count];
+        for (int i = 0; i < jSONArray.Count; i++)
+        {
+            options[i] = jSONArray[i].Value;
+        }
+
+        {        // 该代码 不属于任何 状态 有就执行
+            GameObject gameUI = GameObject.Find("ui");
+            AddBubbleList add = gameUI.GetComponent<AddBubbleList>();
+            if (add != null)
+            {
+                if (options != null && options.Length > 0)
+                {
+                    add.createNewBubble(options);
+                }
+                else
+                {
+                    add.createNewBubble(new string[0] { });
+                }
+            }
+        }
+	}
 
     void SetupServer()
     {
