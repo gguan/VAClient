@@ -38,14 +38,15 @@ namespace Wit.BaiduAip.Speech
         {
             Female, // 0为普通女声
             Male, // 1为普通男生
+            None,
             Duxiaoyao, // 3为情感合成-度逍遥
             Duyaya // 4为情感合成-度丫丫
         }
 
         private const string UrlTts = "http://tsn.baidu.com/text2audio";
 
-        public IEnumerator Synthesis(string text, Action<TtsResponse> callback, int speed = 5, int pit = 5, int vol = 5,
-            Pronouncer per = Pronouncer.Female)
+        public IEnumerator Synthesis(string text, Action<TtsResponse> callback, int speed = 6, int pit = 5, int vol = 5,
+            Pronouncer per = Pronouncer.Duyaya)
         {
             yield return PreAction();
 

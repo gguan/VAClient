@@ -50,6 +50,7 @@ public class WSClient : MonoBehaviour
     void Update()
     {
         FSMSystem.Instance().CurrentState.Act(gameObject, gameObject);
+
         while (ExecuteOnMainThread.Count > 0)
         {
             ExecuteOnMainThread.Dequeue().Invoke();
@@ -101,7 +102,8 @@ public class WSClient : MonoBehaviour
             {
                 RequestData<STTData> mStt = JsonUtility.FromJson<RequestData<STTData>>(data);
                 ControlAnim.Instance().ShowTips(mStt.data.text);
-            }else if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId &&  reqType != "awake")
+            }
+            else if (FSMSystem.Instance().CurrentStateID == StateID.SleepStateId &&  reqType != "awake")
                     {
                         var response = new ResponseData();
             			response.message = "can not do " + reqType + " when unity sleep";
