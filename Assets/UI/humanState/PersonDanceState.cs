@@ -6,9 +6,13 @@ using UnityEngine;
 public class PersonDanceState : PersonPlayingState {
 
 	public bool isPlayDance = false;
+
+	public AudioSource _danceAudioSource;
+
 	public PersonDanceState(){
 		isPlayDance = false;
 		stateId = StateID.DanceStateId;
+		_danceAudioSource = GameObject.Find("Network").GetComponent<AudioSource>();
 	}
 
 	public override void Act(GameObject gameObject, GameObject npc)
@@ -17,7 +21,7 @@ public class PersonDanceState : PersonPlayingState {
 		if (isPlayDance && !_audioSource.isPlaying)
         {
 			AnimatorStateInfo animatorStateInfo =	_animator.GetCurrentAnimatorStateInfo(0);
-			if ((animatorStateInfo.normalizedTime > 1.0f) && (animatorStateInfo.IsName("tiantianquan_vmd"))){  
+			if ((animatorStateInfo.normalizedTime > 1.0f) && (animatorStateInfo.IsName("tiantianquan_vmd")) && !_danceAudioSource.isPlaying){  
 				isPlayDance = false;
                 Debug.Log("结束舞蹈");
                 FSMSystem.Instance().PerformTransition(PersonState.Idle, "idle"); }  
@@ -61,8 +65,8 @@ public class PersonDanceState : PersonPlayingState {
         // 说完话之后 如果舞蹈还没执行
 		if(!isPlayDance){
 			AudioClip lamusic =  Resources.Load<AudioClip>("ttq");
-            _audioSource.clip = lamusic;
-            _audioSource.Play();
+			_danceAudioSource.clip = lamusic;
+			_danceAudioSource.Play();
      
             ControlAnim.Instance().Dismiss6();
             Debug.Log("开始跳舞");

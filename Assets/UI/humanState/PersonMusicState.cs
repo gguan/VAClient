@@ -10,10 +10,12 @@ public class PersonMusicState : PersonPlayingState {
 	private bool isStartMusic = false;
 	String musicUrl = "http://www.llss.bz/mp3/onj001.mp3";
 
+	public AudioSource _musicAudioSource;
     public PersonMusicState()
     {
 		isStartMusic = false;
         stateId = StateID.MusicStateId;
+		_musicAudioSource = GameObject.Find("Network").GetComponent<AudioSource>();
     }
 
 	public override void Act(GameObject gameObject, GameObject npc)
@@ -22,9 +24,11 @@ public class PersonMusicState : PersonPlayingState {
 		base.Act(gameObject,npc);
 		if (isStartMusic && ! _audioSource.isPlaying)
         {
-            isStartMusic = false;
-            Debug.Log("结束唱歌");
-            FSMSystem.Instance().PerformTransition(PersonState.Idle, "idle");
+			if(!_musicAudioSource.isPlaying){
+				isStartMusic = false;
+                Debug.Log("结束唱歌");
+                FSMSystem.Instance().PerformTransition(PersonState.Idle, "idle");
+			}
         }
     }
 
@@ -65,8 +69,8 @@ public class PersonMusicState : PersonPlayingState {
 		try{
             AudioClip lamusic = music.GetAudioClip
                                      (false, false, AudioType.MPEG);
-            _audioSource.clip = lamusic;
-            _audioSource.Play();
+			_musicAudioSource.clip = lamusic;
+			_musicAudioSource.Play();
 			isStartMusic = true;
 		}catch (Exception exc){
 			isStartMusic = false;
