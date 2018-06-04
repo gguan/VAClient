@@ -713,7 +713,7 @@ MonoBehaviour:
   weather: "\u6674"
   wind_direction: "\u4E1C\u5357\u98CE3\u7EA7"
   air_quality: "\u7A7A\u6C14\u8D28\u91CF : 42\u4F18"
-  weather_icon: {fileID: 0}
+  weather_icon: {fileID: 2800000, guid: 0c02eabf22fab4bff91833e32f518d81, type: 3}
   weather_bg: {fileID: 0}
 --- !u!114 &114033864020605168
 MonoBehaviour:
